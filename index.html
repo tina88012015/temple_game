@@ -195,6 +195,17 @@
     cursor:pointer;
   }
   .testimony-entry:hover{background:rgba(203,161,77,0.18); box-shadow:0 0 18px rgba(232,200,119,0.25);}
+  .signature{
+    position:fixed;
+    right:16px;
+    bottom:12px;
+    font-size:11px;
+    color:var(--parchment-dim);
+    opacity:0.5;
+    letter-spacing:0.5px;
+    z-index:5;
+    pointer-events:none;
+  }
 
   /* Modal overlay */
   .overlay{
@@ -955,6 +966,8 @@
   <button class="testimony-entry" onclick="openTestimonyBoard()">拾憶者的證詞板</button>
 
   <p class="hint-footer">六段散落的記憶,彼此牽引。<br>循著已甦醒的碎片,找出通往真相的道路。</p>
+
+  <div class="signature">By Elya Chao</div>
 </div>
 
 <!-- Ending screen -->
@@ -1048,6 +1061,23 @@ function renderRoster(){
   el.innerHTML = rosterOrder.map(buildCardHTML).join('');
 }
 renderRoster();
+
+/* ---------- 圖片預先載入 ---------- */
+function preloadGameImages(){
+  const paths = [
+    'images/aurien.png','images/damien.png','images/fiona.png','images/graham.png','images/livia.png','images/vesper.png',
+    'images/temple-ruins.png','images/market-scene.png','images/truth-background.png','images/truth-ending-day.png','images/truth-ending-night.png',
+    'images/scroll-closed.png','images/scroll-official-record.png','images/scroll-armory.png','images/scroll-medical.png','images/duty-report.png','images/damien-journal.png',
+    'images/aurien-frag-1-warning.png','images/aurien-frag-2-notice.png','images/aurien-frag-3-carriage.png','images/aurien-frag-4-order.png','images/aurien-frag-5-explosion.png',
+    'images/mila-fragment-broken.png','images/mila-fragment-complete.png',
+    'images/mystery-letter.png','images/mystery-letter-reply.png',
+  ];
+  paths.forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
+}
+preloadGameImages();
 
 function showLockedHint(){
   const modal = document.getElementById('modal-content');
