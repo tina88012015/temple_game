@@ -699,32 +699,32 @@
   /* Graham - scene hotspots */
   .scene-wrap{position:relative; margin-bottom:16px;}
 
-  /* 格漢 - 帳本密碼鎖 */
-  .ledger-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-bottom:14px;
+  /* 格漢 - 貨架帳本謎題 */
+  .graham-dialogue{margin-bottom:14px;}
+  .graham-dialogue p{
     font-size:13.5px;
+    line-height:1.9;
     color:var(--parchment);
-  }
-  .ledger-table th, .ledger-table td{
-    border:1px solid var(--card-border);
-    padding:8px 6px;
     text-align:center;
+    margin:0 0 8px;
   }
-  .ledger-table th{
-    background:rgba(203,161,77,0.12);
-    color:var(--gold-bright);
-    font-weight:600;
-    font-size:12.5px;
+  .graham-dialogue p:last-child{color:var(--gold-bright);}
+  .ledger-book-spot{
+    position:absolute;
+    right:4%;
+    bottom:5%;
+    width:15%;
+    padding:0;
+    border:none;
+    background:none;
+    cursor:pointer;
+    filter:drop-shadow(0 0 10px rgba(232,200,119,0.75)) drop-shadow(0 0 20px rgba(232,200,119,0.4));
+    animation:ledger-glow 2.2s ease-in-out infinite;
   }
-  .ledger-table td{background:rgba(0,0,0,0.18);}
-  .ledger-corner-note{
-    font-size:11.5px;
-    color:var(--gold-bright);
-    text-align:right;
-    margin:-6px 0 18px;
-    line-height:1.6;
+  .ledger-book-spot img{width:100%; display:block;}
+  @keyframes ledger-glow{
+    0%,100%{filter:drop-shadow(0 0 10px rgba(232,200,119,0.75)) drop-shadow(0 0 20px rgba(232,200,119,0.4));}
+    50%{filter:drop-shadow(0 0 16px rgba(232,200,119,0.95)) drop-shadow(0 0 30px rgba(232,200,119,0.6));}
   }
   .ledger-lock{display:flex; justify-content:center; gap:14px; margin:6px 0 18px;}
   .dial{
@@ -928,6 +928,14 @@
     color:var(--gold-bright);
     text-align:center;
   }
+  .scroll-reader-subcaption{
+    display:inline-block;
+    margin-top:8px;
+    font-family:'Noto Serif TC',serif;
+    font-size:12.5px;
+    letter-spacing:0;
+    color:var(--parchment-dim);
+  }
 </style>
 </head>
 <body class="intro-active">
@@ -1077,6 +1085,7 @@ function preloadGameImages(){
   const paths = [
     'images/aurien.png','images/damien.png','images/fiona.png','images/graham.png','images/livia.png','images/vesper.png',
     'images/temple-ruins.png','images/market-scene.png','images/truth-background.png','images/truth-ending-day.png','images/truth-ending-night.png',
+    'images/graham-shelf.png','images/graham-ledger-closed.png','images/graham-ledger-open.png',
     'images/scroll-closed.png','images/scroll-official-record.png','images/scroll-armory.png','images/scroll-medical.png','images/duty-report.png','images/damien-journal.png',
     'images/aurien-frag-1-warning.png','images/aurien-frag-2-notice.png','images/aurien-frag-3-carriage.png','images/aurien-frag-4-order.png','images/aurien-frag-5-explosion.png',
     'images/mila-fragment-broken.png','images/mila-fragment-complete.png',
@@ -1148,7 +1157,7 @@ function openModal(key){
     fionaOrder = [3,1,4,2];
   } else if(c.type === 'scene-puzzle'){
     grahamFound = new Set();
-    grahamDials = [0,0,0,0];
+    grahamDials = [0,0,0];
   } else if(c.type === 'mystery-letter'){
     mysteryAnswered = { 1:false, 2:false, 3:false };
     mysteryBlank2Tried = new Set();
@@ -1627,30 +1636,20 @@ function buildScenePuzzleHTML(c){
   return `
     ${modalHeader(c)}
     <div class="modal-body">
-      <div id="graham-intro" style="display:${skipLedger ? 'none' : 'block'};">
-        <div class="reveal-crystal-wrap">
-          <img src="images/mila-fragment-complete.png" alt="記憶碎片">
-          <span class="reveal-sparkle rs1"></span><span class="reveal-sparkle rs2"></span><span class="reveal-sparkle rs3"></span><span class="reveal-sparkle rs4"></span><span class="reveal-sparkle rs5"></span>
+      <div id="graham-ledger" style="display:${skipLedger ? 'none' : 'block'};">
+        <div class="graham-dialogue">
+          <p>「我這人記性差,才學著天天寫日記,可現在日記本的鎖卻怎麼也打不開。」</p>
+          <p>「你要是能替我解開這把鎖,或許,我能想起更多那天的事。」</p>
+          <p>「對了對了,我的習慣是,帳本可以亂,貨價不能亂。」</p>
         </div>
-        <button class="fragment-reveal-btn" onclick="revealGrahamMemory()">點擊記憶碎片,查看格漢記憶</button>
-      </div>
-
-      <div id="graham-ledger" style="display:none;">
-        <p style="text-align:center; color:var(--gold-bright); font-size:13.5px; margin:0 0 4px;">「……這是我那天還沒算完的帳。」</p>
-        <p style="text-align:center; color:var(--parchment-dim); font-size:13px; margin:0 0 16px;">「幫我把它補完,也許我能想起更多。」</p>
-        <table class="ledger-table">
-          <thead><tr><th>商品</th><th>單價</th><th>數量</th><th>收入</th></tr></thead>
-          <tbody>
-            <tr><td>麵包</td><td>3</td><td>4</td><td>12</td></tr>
-            <tr><td>香料</td><td>5</td><td>?</td><td>20</td></tr>
-            <tr><td>布料</td><td>?</td><td>3</td><td>18</td></tr>
-            <tr><td>蠟燭</td><td>2</td><td>7</td><td>?</td></tr>
-            <tr><td>藥草</td><td>4</td><td>?</td><td>12</td></tr>
-          </tbody>
-        </table>
-        <p class="ledger-corner-note">老規矩:超過九,就把數字再加一次。</p>
+        <div class="scene-wrap">
+          <img class="scene-visual" src="images/graham-shelf.png" alt="貨架">
+          <button class="ledger-book-spot" onclick="openLedgerReader()" aria-label="打開帳本">
+            <img src="images/graham-ledger-closed.png" alt="上鎖的帳本">
+          </button>
+        </div>
         <div class="ledger-lock">
-          ${[0,1,2,3].map(i => `
+          ${[0,1,2].map(i => `
             <div class="dial">
               <button type="button" onclick="grahamDialChange(${i},1)" aria-label="加一">▲</button>
               <div class="dial-value" id="dial-${i}">0</div>
@@ -1680,11 +1679,14 @@ function buildScenePuzzleHTML(c){
     </div>
   `;
 }
-function revealGrahamMemory(){
-  document.getElementById('graham-intro').style.display = 'none';
-  document.getElementById('graham-ledger').style.display = 'block';
+function openLedgerReader(){
+  document.getElementById('scroll-reader-img').src = 'images/graham-ledger-open.png';
+  const cap = document.getElementById('scroll-reader-caption');
+  cap.innerHTML = '霜月十七日的帳<br><span class="scroll-reader-subcaption">「這是前幾天的帳,我想應該跟日記本有什麼關係吧。」</span>';
+  cap.style.display = 'block';
+  document.getElementById('scroll-reader').classList.add('show');
 }
-let grahamDials = [0,0,0,0];
+let grahamDials = [0,0,0];
 let grahamLedgerDone = false;
 function grahamDialChange(idx, dir){
   grahamDials[idx] = (grahamDials[idx] + dir + 10) % 10;
@@ -1693,7 +1695,7 @@ function grahamDialChange(idx, dir){
 function checkGrahamLedger(){
   const code = grahamDials.join('');
   const fb = document.getElementById('graham-ledger-feedback');
-  if(code === '4653'){
+  if(code === '435'){
     fb.textContent = '格漢的記憶,漸漸想起來了。';
     fb.className = 'feedback-msg correct';
     grahamLedgerDone = true;
