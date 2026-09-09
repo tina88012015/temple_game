@@ -1640,8 +1640,7 @@ function buildScenePuzzleHTML(c){
         <div class="graham-dialogue">
           <p>「我這人記性差,才學著天天寫日記,可現在日記本的鎖卻怎麼也打不開。」</p>
           <p>「你要是能替我解開這把鎖,或許,我能想起更多那天的事。」</p>
-          <p>「有一筆帳我前幾天喝酒不小心撒了,那筆就別管他了!」</p>
-          <p>「對了對了,我的習慣是,帳本可以亂,貨價不能亂,貨架的順序肯定跟密碼有關吧!」</p>
+          <p>「對了對了,我的習慣是,帳本可以亂,貨架不能亂,貨架的順序肯定跟密碼有關吧!」</p>
         </div>
         <div class="scene-wrap">
           <img class="scene-visual" src="images/graham-shelf.png" alt="貨架">
@@ -1683,7 +1682,7 @@ function buildScenePuzzleHTML(c){
 function openLedgerReader(){
   document.getElementById('scroll-reader-img').src = 'images/graham-ledger-open.png';
   const cap = document.getElementById('scroll-reader-caption');
-  cap.innerHTML = '霜月十七日的帳<br><span class="scroll-reader-subcaption">「這是前幾天的帳,我想應該跟日記本有什麼關係吧。」</span>';
+  cap.innerHTML = '霜月十七日的帳<br><span class="scroll-reader-subcaption">「這是前幾天的帳,我想應該跟日記本有什麼關係吧。」<br>「有一筆帳我前幾天喝酒不小心撒了,那筆就別管他了!」</span>';
   cap.style.display = 'block';
   document.getElementById('scroll-reader').classList.add('show');
 }
