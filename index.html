@@ -838,16 +838,16 @@
   .armory-guard-name{
     display:block;
     font-family:'Cinzel',serif;
-    font-size:12.5px;
+    font-size:16px;
     letter-spacing:0.03em;
     color:var(--gold-bright);
-    margin-top:6px;
+    margin-top:8px;
   }
   .armory-guard-role{
     display:block;
-    font-size:10.5px;
+    font-size:14px;
     color:var(--parchment-dim);
-    margin-top:1px;
+    margin-top:2px;
   }
   .armory-row-label{
     font-family:'Cinzel',serif;
@@ -915,8 +915,8 @@
   @media (max-width:640px){
     .armory-grid{grid-template-columns:34px repeat(4, 1fr); gap:8px 5px;}
     .armory-guard-portrait{width:62px; height:62px; border-width:2px;}
-    .armory-guard-name{font-size:10.5px;}
-    .armory-guard-role{font-size:9px;}
+    .armory-guard-name{font-size:12.5px;}
+    .armory-guard-role{font-size:11px;}
     .armory-row-label{font-size:10px;}
     .armory-slot{min-height:32px; padding:3px 3px;}
     .armory-slot .chip-emoji{font-size:14px;}
@@ -1269,14 +1269,6 @@ function openModal(key){
     currentOrder = [3,1,5,2,4];
     renderFragments();
   } else if(c.type === 'scrolls'){
-    if(completed.has('damien')){
-      damienFilled = new Set(damienZones.map(z => z.id));
-      damienUsedFragments = new Set(damienFragments.map(f => f.id));
-    } else {
-      damienFilled = new Set();
-      damienUsedFragments = new Set();
-    }
-    renderDamienFragments();
     resetArmoryState();
     renderArmoryPool();
   } else if(c.type === 'log-decode'){
@@ -1463,25 +1455,7 @@ function checkOrder(){
   }
 }
 
-/* ---------- 達米安 · 戰後紀錄拼圖 ---------- */
-const damienZones = [
-  { id:1, x:35.5, y:32.8, w:44,   h:6.5 },
-  { id:2, x:27.8, y:41.6, w:13,   h:6.5 },
-  { id:3, x:18.2, y:46.7, w:61,   h:6.5 },
-  { id:4, x:43.9, y:59.5, w:30,   h:6.5 },
-];
-const damienFragments = [
-  { id:1, zone:1, text:'東門警鐘響起', correct:true },
-  { id:2, zone:2, text:'敵軍', correct:true },
-  { id:3, zone:2, text:'盜賊', correct:false },
-  { id:4, zone:3, text:'我率十二名守衛迎戰', correct:true },
-  { id:5, zone:4, text:'東門失守', correct:true },
-  { id:6, zone:4, text:'敵軍撤退', correct:false },
-];
-const damienFragmentOrder = [3,1,5,2,6,4];
-let damienFilled = new Set();
-let damienDragId = null;
-
+/* ---------- 達米安 · 戰後紀錄 ---------- */
 function buildScrollsHTML(c){
   const solved = completed.has('damien');
   const armoryDone = solved || damienArmoryDone;
@@ -1496,81 +1470,25 @@ function buildScrollsHTML(c){
           <img src="images/mila-fragment-complete.png" alt="記憶碎片">
           <span class="reveal-sparkle rs1"></span><span class="reveal-sparkle rs2"></span><span class="reveal-sparkle rs3"></span><span class="reveal-sparkle rs4"></span><span class="reveal-sparkle rs5"></span>
         </div>
-        <button class="fragment-reveal-btn" onclick="revealMemory('damien')">點擊記憶碎片,查看達米安記憶</button>
+        <p class="armory-hint" style="margin-top:14px;">達米安的記憶碎片已解鎖</p>
+        <button class="fragment-reveal-btn" onclick="revealDamienMemory()">點擊查看達米安記憶</button>
       </div>
       <div id="damien-content" style="display:${solved ? 'block' : 'none'};">
-        <p class="drag-hint">戰後紀錄殘缺不全,把碎片拖回正確的位置。</p>
         <div class="scene-wrap damien-scroll-wrap">
           <img class="scene-visual" src="images/scroll-official-record.png" alt="戰後紀錄">
-          ${damienZones.map(z => `
-            <div class="damien-zone${solved ? ' filled' : ''}" id="damien-zone-${z.id}"
-              style="left:${z.x}%; top:${z.y}%; width:${z.w}%; height:${z.h}%;"
-              ondragover="damienZoneDragOver(event)"
-              ondragleave="damienZoneDragLeave(event)"
-              ondrop="damienZoneDrop(event, ${z.id})"></div>
-          `).join('')}
         </div>
-        <p class="damien-complete-msg${solved ? ' show' : ''}" id="damien-complete-msg">戰後紀錄,已完整重現。</p>
-        <div class="damien-fragment-pool" id="damien-fragment-pool"></div>
+        <p class="damien-complete-msg show">戰後紀錄,已完整重現。</p>
       </div>
     </div>
   `;
 }
-let damienUsedFragments = new Set();
-function renderDamienFragments(){
-  const pool = document.getElementById('damien-fragment-pool');
-  if(!pool) return;
-  const remaining = damienFragmentOrder.filter(fid => !damienUsedFragments.has(fid));
-  pool.innerHTML = remaining.map(fid => {
-    const f = damienFragments.find(x => x.id === fid);
-    return `
-      <div class="damien-fragment" draggable="true" id="dfrag-${f.id}"
-        ondragstart="damienFragDragStart(event, ${f.id})"
-        ondragend="damienFragDragEnd(event)">${f.text}</div>
-    `;
-  }).join('');
-}
-function damienFragDragStart(e, fid){
-  damienDragId = fid;
-  e.dataTransfer.effectAllowed = 'move';
-  e.currentTarget.classList.add('dragging');
-}
-function damienFragDragEnd(e){
-  e.currentTarget.classList.remove('dragging');
-  damienDragId = null;
-}
-function damienZoneDragOver(e){
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-  e.currentTarget.classList.add('drag-over');
-}
-function damienZoneDragLeave(e){
-  e.currentTarget.classList.remove('drag-over');
-}
-function damienZoneDrop(e, zoneId){
-  e.preventDefault();
-  const zoneEl = document.getElementById(`damien-zone-${zoneId}`);
-  zoneEl.classList.remove('drag-over');
-  if(damienDragId === null) return;
-  const frag = damienFragments.find(f => f.id === damienDragId);
-  if(frag && frag.zone === zoneId && frag.correct && !damienFilled.has(zoneId)){
-    damienFilled.add(zoneId);
-    damienUsedFragments.add(frag.id);
-    zoneEl.classList.add('filled');
-    renderDamienFragments();
-    if(damienFilled.size === damienZones.length){
-      document.getElementById('damien-complete-msg').classList.add('show');
-      if(!completed.has('damien')){
-        completed.add('damien');
-        saveCompleted();
-        renderRoster();
-      }
-    }
-  } else {
-    zoneEl.classList.add('wrong-flash');
-    setTimeout(() => zoneEl.classList.remove('wrong-flash'), 450);
+function revealDamienMemory(){
+  revealMemory('damien');
+  if(!completed.has('damien')){
+    completed.add('damien');
+    saveCompleted();
+    renderRoster();
   }
-  damienDragId = null;
 }
 function openJournalReader(){
   document.getElementById('scroll-reader-img').src = 'images/damien-journal.png';
