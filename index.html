@@ -797,6 +797,98 @@
     letter-spacing:0.5px;
   }
   .damien-complete-msg.show{opacity:1;}
+
+  /* 達米安 - 軍械庫配給 */
+  .armory-intro-text{text-align:center; color:var(--parchment-dim); font-size:13.5px; margin:0 0 16px; line-height:1.8;}
+  .armory-layout{display:flex; gap:20px; align-items:flex-start;}
+  .armory-rules{
+    flex:0 0 200px;
+    background:rgba(0,0,0,0.28);
+    border:1px solid var(--card-border);
+    border-radius:8px;
+    padding:16px 14px;
+    position:sticky;
+    top:0;
+  }
+  .armory-rules h4{
+    font-family:'Cinzel',serif;
+    font-size:12px;
+    letter-spacing:0.12em;
+    color:var(--gold-bright);
+    margin:0 0 10px;
+    text-align:center;
+  }
+  .armory-rules ol{margin:0; padding-left:18px;}
+  .armory-rules li{font-size:11.5px; line-height:1.7; color:var(--parchment-dim); margin-bottom:8px;}
+  .armory-rules li:last-child{margin-bottom:0;}
+  .armory-main{flex:1; min-width:0;}
+  .armory-guards{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:10px;
+  }
+  .armory-guard-card{text-align:center;}
+  .armory-guard-portrait{
+    width:100%;
+    border-radius:6px;
+    overflow:hidden;
+    border:1px solid var(--card-border);
+  }
+  .armory-guard-portrait img{width:100%; display:block;}
+  .armory-slots{display:flex; flex-direction:column; gap:6px; margin-top:8px;}
+  .armory-slot{
+    height:40px;
+    border:2px dashed rgba(203,161,77,0.45);
+    border-radius:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:19px;
+    background:rgba(0,0,0,0.22);
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .armory-slot-label{font-size:9.5px; color:var(--parchment-dim); letter-spacing:0.05em; margin-top:2px; opacity:0.75;}
+  .armory-slot.drag-over{border-color:var(--gold-bright); box-shadow:0 0 8px rgba(232,200,119,0.55) inset;}
+  .armory-slot.filled{border-style:solid; border-color:var(--gold); background:rgba(203,161,77,0.12);}
+  .armory-slot.correct{border-style:solid; border-color:#9fd68c; background:rgba(159,214,140,0.12);}
+  .armory-slot.wrong-flash{border-color:#c0524f; animation:damien-shake .4s ease;}
+  .armory-pool{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+    margin-top:20px;
+    padding-top:14px;
+    border-top:1px solid var(--card-border);
+  }
+  .armory-chip{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:rgba(0,0,0,0.3);
+    border:1px solid var(--card-border);
+    border-radius:999px;
+    padding:7px 14px 7px 10px;
+    font-size:13px;
+    color:var(--parchment);
+    cursor:grab;
+  }
+  .armory-chip span.chip-emoji{font-size:16px;}
+  .armory-chip:active{cursor:grabbing;}
+  .armory-chip.dragging{opacity:.35;}
+  .armory-submit-row{text-align:center; margin-top:20px;}
+  .armory-complete-msg{
+    text-align:center;
+    color:var(--gold-bright);
+    font-size:13.5px;
+    margin:16px 0 4px;
+    line-height:1.8;
+  }
+  @media (max-width:640px){
+    .armory-layout{flex-direction:column;}
+    .armory-rules{position:static; flex:none; width:100%;}
+    .armory-guards{grid-template-columns:repeat(2, 1fr); gap:14px;}
+  }
   .clue-point{position:absolute; width:0; height:0;}
   .clue-spark{
     position:absolute; top:-16px; left:-16px;
@@ -957,7 +1049,6 @@
     <p class="quote">「敵軍於三更突襲東門。守衛奮戰至天明,神殿最終失守。」</p>
     <p>於是後來的人們相信,那是一場失敗的戰爭。</p>
     <p>王國為那一夜未能歸來的人立下石碑。倖存者各自離去,而史官則依照留下的戰後紀錄,將「憶之神殿陷落」寫入史冊。</p>
-    <p>沒有人再追問,那一夜究竟有多少人死去,又有多少人早已離開。</p>
     <p>而神殿,從此被封鎖。</p>
     <button class="submit-btn intro-btn" onclick="showIntroPage(3)">接著探索</button>
   </div>
@@ -1087,6 +1178,7 @@ function preloadGameImages(){
     'images/temple-ruins.png','images/market-scene.png','images/truth-background.png','images/truth-ending-day.png','images/truth-ending-night.png',
     'images/graham-shelf.png','images/graham-ledger-closed.png','images/graham-ledger-open.png',
     'images/scroll-closed.png','images/scroll-official-record.png','images/scroll-armory.png','images/scroll-medical.png','images/duty-report.png','images/damien-journal.png',
+    'images/guard-alvin.png','images/guard-beck.png','images/guard-carl.png','images/guard-dain.png',
     'images/aurien-frag-1-warning.png','images/aurien-frag-2-notice.png','images/aurien-frag-3-carriage.png','images/aurien-frag-4-order.png','images/aurien-frag-5-explosion.png',
     'images/mila-fragment-broken.png','images/mila-fragment-complete.png',
     'images/mystery-letter.png','images/mystery-letter-reply.png',
@@ -1134,7 +1226,7 @@ function openModal(key){
     'mystery-letter': buildMysteryLetterHTML,
   };
   modal.innerHTML = (builders[c.type] || buildPlaceholderHTML)(c);
-  modal.classList.toggle('modal-wide', c.type === 'scene-puzzle' || c.type === 'memory-puzzle');
+  modal.classList.toggle('modal-wide', c.type === 'scene-puzzle' || c.type === 'memory-puzzle' || c.type === 'scrolls');
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 
@@ -1151,6 +1243,8 @@ function openModal(key){
       damienUsedFragments = new Set();
     }
     renderDamienFragments();
+    resetArmoryState();
+    renderArmoryPool();
   } else if(c.type === 'log-decode'){
     liviaViewed = new Set();
   } else if(c.type === 'apprentice'){
@@ -1356,10 +1450,14 @@ let damienDragId = null;
 
 function buildScrollsHTML(c){
   const solved = completed.has('damien');
+  const armoryDone = solved || damienArmoryDone;
   return `
     ${modalHeader(c)}
     <div class="modal-body">
-      <div id="damien-intro" style="display:${solved ? 'none' : 'block'};">
+      <div id="damien-armory" style="display:${armoryDone ? 'none' : 'block'};">
+        ${buildArmoryHTML()}
+      </div>
+      <div id="damien-intro" style="display:${(armoryDone && !solved) ? 'block' : 'none'};">
         <div class="reveal-crystal-wrap">
           <img src="images/mila-fragment-complete.png" alt="記憶碎片">
           <span class="reveal-sparkle rs1"></span><span class="reveal-sparkle rs2"></span><span class="reveal-sparkle rs3"></span><span class="reveal-sparkle rs4"></span><span class="reveal-sparkle rs5"></span>
@@ -1449,6 +1547,207 @@ function openJournalReader(){
 }
 function closeScrollReader(){
   document.getElementById('scroll-reader').classList.remove('show');
+}
+
+/* ---------- 達米安 · 軍械庫配給 ---------- */
+const armoryGuards = [
+  { key:'alvin', name:'阿爾文', img:'images/guard-alvin.png', weapon:'sword',  equip:'shield'  },
+  { key:'beck',  name:'貝克',   img:'images/guard-beck.png',  weapon:'dagger', equip:'torch'   },
+  { key:'carl',  name:'卡爾',   img:'images/guard-carl.png',  weapon:'spear',  equip:'lantern' },
+  { key:'dain',  name:'戴恩',   img:'images/guard-dain.png',  weapon:'bow',    equip:'bell'    },
+];
+const armoryWeapons = [
+  { id:'sword',  emoji:'⚔️', name:'長劍' },
+  { id:'bow',    emoji:'🏹', name:'長弓' },
+  { id:'spear',  emoji:'🔱', name:'長槍' },
+  { id:'dagger', emoji:'🗡️', name:'短劍' },
+];
+const armoryEquip = [
+  { id:'shield',  emoji:'🛡️', name:'盾牌' },
+  { id:'torch',   emoji:'🔥', name:'火把' },
+  { id:'bell',    emoji:'🔔', name:'警鈴' },
+  { id:'lantern', emoji:'🏮', name:'提燈' },
+];
+let damienArmoryDone = localStorage.getItem('damienArmoryDone') === '1';
+let armoryAssign = {};
+let armoryLocked = {};
+let armoryDragItem = null;
+
+function resetArmoryState(){
+  armoryAssign = {};
+  armoryLocked = {};
+  armoryGuards.forEach(g => {
+    armoryAssign[g.key] = { weapon:null, equip:null };
+    armoryLocked[g.key] = { weapon:false, equip:false };
+  });
+}
+resetArmoryState();
+
+function buildArmoryHTML(){
+  return `
+    <p class="armory-intro-text">達米安管理軍械庫時留下的「夜間裝備配給表」四散一地。請依照牆上的《夜巡配給守則》,替四名守衛重新配好武器與裝備。</p>
+    <div class="armory-layout">
+      <div class="armory-rules">
+        <h4>夜巡配給守則</h4>
+        <ol>
+          <li>城門守衛必須攜帶盾牌,但不使用長槍。</li>
+          <li>使用長弓的守衛駐守高處,且不需要火把。</li>
+          <li>城牆巡邏者必須攜帶火把,使用短劍。</li>
+          <li>中庭守衛使用長槍,但不攜帶警鈴。</li>
+          <li>提燈配給使用長槍的守衛。</li>
+          <li>警鈴只配給能俯瞰整座神殿的守衛。</li>
+        </ol>
+      </div>
+      <div class="armory-main">
+        <div class="armory-guards">
+          ${armoryGuards.map(g => `
+            <div class="armory-guard-card">
+              <div class="armory-guard-portrait"><img src="${g.img}" alt="${g.name}"></div>
+              <div class="armory-slots">
+                <div class="armory-slot" id="armory-slot-${g.key}-weapon"
+                  ondragover="armorySlotDragOver(event)"
+                  ondragleave="armorySlotDragLeave(event)"
+                  ondrop="armorySlotDrop(event, '${g.key}', 'weapon')"></div>
+                <div class="armory-slot" id="armory-slot-${g.key}-equip"
+                  ondragover="armorySlotDragOver(event)"
+                  ondragleave="armorySlotDragLeave(event)"
+                  ondrop="armorySlotDrop(event, '${g.key}', 'equip')"></div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="armory-pool" id="armory-pool"></div>
+        <div class="armory-submit-row">
+          <button class="submit-btn" onclick="checkArmory()">提交配給</button>
+          <p class="feedback-msg" id="armory-feedback"></p>
+        </div>
+        <p class="armory-complete-msg" id="armory-complete-msg" style="display:none;">配給完全正確——達米安的軍械庫記憶,似乎開始浮現。</p>
+      </div>
+    </div>
+  `;
+}
+function armoryItemById(kind, id){
+  return (kind === 'weapon' ? armoryWeapons : armoryEquip).find(it => it.id === id);
+}
+function armoryUsedIds(kind){
+  const used = new Set();
+  armoryGuards.forEach(g => { const v = armoryAssign[g.key][kind]; if(v) used.add(v); });
+  return used;
+}
+function renderArmoryPool(){
+  const pool = document.getElementById('armory-pool');
+  if(!pool) return;
+  const usedWeapons = armoryUsedIds('weapon');
+  const usedEquip = armoryUsedIds('equip');
+  const items = [
+    ...armoryWeapons.filter(w => !usedWeapons.has(w.id)).map(w => ({ ...w, kind:'weapon' })),
+    ...armoryEquip.filter(e => !usedEquip.has(e.id)).map(e => ({ ...e, kind:'equip' })),
+  ];
+  pool.innerHTML = items.map(it => `
+    <div class="armory-chip" draggable="true" id="armory-chip-${it.kind}-${it.id}"
+      ondragstart="armoryChipDragStart(event, '${it.kind}', '${it.id}')"
+      ondragend="armoryChipDragEnd(event)">
+      <span class="chip-emoji">${it.emoji}</span><span>${it.name}</span>
+    </div>
+  `).join('');
+}
+function armoryChipDragStart(e, kind, id){
+  armoryDragItem = { kind, id };
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.classList.add('dragging');
+}
+function armoryChipDragEnd(e){
+  e.currentTarget.classList.remove('dragging');
+  armoryDragItem = null;
+}
+function armorySlotDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+function armorySlotDragLeave(e){
+  e.currentTarget.classList.remove('drag-over');
+}
+function armorySlotDrop(e, guardKey, slotKind){
+  e.preventDefault();
+  const slotEl = document.getElementById(`armory-slot-${guardKey}-${slotKind}`);
+  slotEl.classList.remove('drag-over');
+  if(!armoryDragItem || armoryDragItem.kind !== slotKind) return;
+  if(armoryLocked[guardKey][slotKind]) return;
+  armoryAssign[guardKey][slotKind] = armoryDragItem.id;
+  armoryDragItem = null;
+  renderArmorySlot(guardKey, slotKind);
+  renderArmoryPool();
+  const fb = document.getElementById('armory-feedback');
+  if(fb){ fb.textContent = ''; fb.className = 'feedback-msg'; }
+}
+function renderArmorySlot(guardKey, slotKind){
+  const slotEl = document.getElementById(`armory-slot-${guardKey}-${slotKind}`);
+  if(!slotEl) return;
+  const val = armoryAssign[guardKey][slotKind];
+  if(val){
+    const it = armoryItemById(slotKind, val);
+    slotEl.innerHTML = `<span class="chip-emoji">${it.emoji}</span>`;
+    slotEl.classList.add('filled');
+  } else {
+    slotEl.innerHTML = '';
+    slotEl.classList.remove('filled');
+  }
+}
+function checkArmory(){
+  const fb = document.getElementById('armory-feedback');
+  const allFilled = armoryGuards.every(g => armoryAssign[g.key].weapon && armoryAssign[g.key].equip);
+  if(!allFilled){
+    fb.textContent = '還有裝備尚未配給完畢。';
+    fb.className = 'feedback-msg wrong';
+    return;
+  }
+  let allCorrect = true;
+  armoryGuards.forEach(g => {
+    const a = armoryAssign[g.key];
+    const weaponSlot = document.getElementById(`armory-slot-${g.key}-weapon`);
+    const equipSlot = document.getElementById(`armory-slot-${g.key}-equip`);
+    if(a.weapon === g.weapon){
+      armoryLocked[g.key].weapon = true;
+      weaponSlot.classList.add('correct');
+    } else {
+      allCorrect = false;
+      weaponSlot.classList.add('wrong-flash');
+      setTimeout(() => weaponSlot.classList.remove('wrong-flash'), 450);
+      a.weapon = null;
+    }
+    if(a.equip === g.equip){
+      armoryLocked[g.key].equip = true;
+      equipSlot.classList.add('correct');
+    } else {
+      allCorrect = false;
+      equipSlot.classList.add('wrong-flash');
+      setTimeout(() => equipSlot.classList.remove('wrong-flash'), 450);
+      a.equip = null;
+    }
+  });
+  armoryGuards.forEach(g => {
+    renderArmorySlot(g.key, 'weapon');
+    renderArmorySlot(g.key, 'equip');
+  });
+  renderArmoryPool();
+  if(allCorrect){
+    fb.textContent = '';
+    fb.className = 'feedback-msg';
+    document.getElementById('armory-complete-msg').style.display = 'block';
+    damienArmoryDone = true;
+    localStorage.setItem('damienArmoryDone', '1');
+    setTimeout(proceedFromArmoryToIntro, 1400);
+  } else {
+    fb.textContent = '配給不符合《夜巡配給守則》,請再檢查一次。';
+    fb.className = 'feedback-msg wrong';
+  }
+}
+function proceedFromArmoryToIntro(){
+  const armoryEl = document.getElementById('damien-armory');
+  const introEl = document.getElementById('damien-intro');
+  if(armoryEl) armoryEl.style.display = 'none';
+  if(introEl) introEl.style.display = 'block';
 }
 
 /* ---------- 莉薇亞 · 三份文件 ---------- */
@@ -2068,10 +2367,10 @@ function closeEnding(){
 
 /* ---------- 最後推論(四選一) ---------- */
 const inferenceOptions = [
-  { key:'A', title:'東門之戰', desc:'敵軍於三更攻入東門。守衛抵抗至天明,歐里安最終與神殿一同消失。', correct:false },
-  { key:'B', title:'封印事故', desc:'神殿內部發生異變。歐里安提前疏散眾人,卻沒能阻止神殿最終毀滅。', correct:false },
-  { key:'C', title:'秘密撤離', desc:'歐里安得知危險正在逼近,因此提前安排眾人撤離,並秘密送走某個被藏在神殿中的人。他最後獨自留下,讓神殿與其中的秘密一同消失。', correct:false },
-  { key:'D', title:'被安排好的「戰敗」', desc:'歐里安提前安排眾人撤離,秘密送走「她」,並讓達米安留下不存在的東門之戰。最後,他獨自留在神殿,讓所有可能追查到「她」的痕跡,都隨神殿一起消失。', correct:true },
+  { key:'A', title:'東門失守', desc:'敵軍趁夜攻入東門,守衛抵抗至天明。歐里安與神殿最終在戰火中消失。', correct:false },
+  { key:'B', title:'封印失控', desc:'神殿深處的封印突然失控。歐里安來不及撤離,只能留下阻止異變,最終與神殿一同毀滅。', correct:false },
+  { key:'C', title:'遭人追捕', desc:'神殿的秘密遭到外人發現。歐里安帶領眾人連夜逃離,神殿則在無人看守後遭到摧毀。', correct:false },
+  { key:'D', title:'被安排好的「戰敗」', desc:'神殿的毀滅並非意外。人們早已被安排離開,而歐里安選擇留下,讓一場從未發生的戰爭成為最後被記住的故事。', correct:true },
 ];
 function openInference(){
   const overlay = document.getElementById('inference-overlay');
@@ -2310,6 +2609,7 @@ function closeFinalEnding(){
 function restartWholeGame(){
   localStorage.removeItem('templeCompleted');
   localStorage.removeItem('templeTestimony');
+  localStorage.removeItem('damienArmoryDone');
   location.reload();
 }
 </script>
