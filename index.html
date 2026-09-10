@@ -800,34 +800,32 @@
 
   /* 達米安 - 軍械庫配給 */
   .armory-intro-text{text-align:center; color:var(--parchment-dim); font-size:13.5px; margin:0 0 16px; line-height:1.8;}
-  .armory-layout{display:flex; gap:20px; align-items:flex-start;}
   .armory-rules{
-    flex:0 0 200px;
     background:rgba(0,0,0,0.28);
     border:1px solid var(--card-border);
     border-radius:8px;
-    padding:16px 14px;
-    position:sticky;
-    top:0;
+    padding:16px 18px;
+    margin-bottom:20px;
   }
   .armory-rules h4{
     font-family:'Cinzel',serif;
-    font-size:12px;
+    font-size:12.5px;
     letter-spacing:0.12em;
     color:var(--gold-bright);
     margin:0 0 10px;
     text-align:center;
   }
-  .armory-rules ol{margin:0; padding-left:18px;}
-  .armory-rules li{font-size:11.5px; line-height:1.7; color:var(--parchment-dim); margin-bottom:8px;}
+  .armory-rules ol{margin:0; padding-left:20px;}
+  .armory-rules li{font-size:12.5px; line-height:1.85; color:var(--parchment-dim); margin-bottom:6px;}
   .armory-rules li:last-child{margin-bottom:0;}
-  .armory-main{flex:1; min-width:0;}
-  .armory-guards{
+
+  .armory-grid{
     display:grid;
-    grid-template-columns:repeat(4, 1fr);
-    gap:10px;
+    grid-template-columns:48px repeat(4, 1fr);
+    gap:10px 8px;
+    align-items:center;
   }
-  .armory-guard-card{text-align:center;}
+  .armory-portrait-cell{text-align:center;}
   .armory-guard-portrait{
     width:100%;
     border-radius:6px;
@@ -835,7 +833,28 @@
     border:1px solid var(--card-border);
   }
   .armory-guard-portrait img{width:100%; display:block;}
-  .armory-slots{display:flex; flex-direction:column; gap:6px; margin-top:8px;}
+  .armory-guard-name{
+    display:block;
+    font-family:'Cinzel',serif;
+    font-size:12.5px;
+    letter-spacing:0.03em;
+    color:var(--gold-bright);
+    margin-top:6px;
+  }
+  .armory-guard-role{
+    display:block;
+    font-size:10.5px;
+    color:var(--parchment-dim);
+    margin-top:1px;
+  }
+  .armory-row-label{
+    font-family:'Cinzel',serif;
+    font-size:11.5px;
+    letter-spacing:0.05em;
+    color:var(--gold-bright);
+    text-align:center;
+    writing-mode:horizontal-tb;
+  }
   .armory-slot{
     height:40px;
     border:2px dashed rgba(203,161,77,0.45);
@@ -847,20 +866,23 @@
     background:rgba(0,0,0,0.22);
     transition:border-color .2s ease, box-shadow .2s ease;
   }
-  .armory-slot-label{font-size:9.5px; color:var(--parchment-dim); letter-spacing:0.05em; margin-top:2px; opacity:0.75;}
   .armory-slot.drag-over{border-color:var(--gold-bright); box-shadow:0 0 8px rgba(232,200,119,0.55) inset;}
   .armory-slot.filled{border-style:solid; border-color:var(--gold); background:rgba(203,161,77,0.12);}
   .armory-slot.correct{border-style:solid; border-color:#9fd68c; background:rgba(159,214,140,0.12);}
   .armory-slot.wrong-flash{border-color:#c0524f; animation:damien-shake .4s ease;}
-  .armory-pool{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    justify-content:center;
-    margin-top:20px;
-    padding-top:14px;
-    border-top:1px solid var(--card-border);
+
+  .armory-pool{margin-top:22px; padding-top:16px; border-top:1px solid var(--card-border);}
+  .armory-pool-row{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
+  .armory-pool-row:last-child{margin-bottom:0;}
+  .armory-pool-label{
+    flex:0 0 40px;
+    font-family:'Cinzel',serif;
+    font-size:11.5px;
+    letter-spacing:0.05em;
+    color:var(--gold-bright);
+    text-align:center;
   }
+  .armory-pool-items{display:flex; flex-wrap:wrap; gap:8px; flex:1;}
   .armory-chip{
     display:flex;
     align-items:center;
@@ -885,9 +907,12 @@
     line-height:1.8;
   }
   @media (max-width:640px){
-    .armory-layout{flex-direction:column;}
-    .armory-rules{position:static; flex:none; width:100%;}
-    .armory-guards{grid-template-columns:repeat(2, 1fr); gap:14px;}
+    .armory-grid{grid-template-columns:34px repeat(4, 1fr); gap:8px 5px;}
+    .armory-guard-name{font-size:10.5px;}
+    .armory-guard-role{font-size:9px;}
+    .armory-row-label{font-size:10px;}
+    .armory-slot{height:32px; font-size:15px;}
+    .armory-pool-label{flex-basis:34px; font-size:10px;}
   }
   .clue-point{position:absolute; width:0; height:0;}
   .clue-spark{
@@ -1551,10 +1576,10 @@ function closeScrollReader(){
 
 /* ---------- 達米安 · 軍械庫配給 ---------- */
 const armoryGuards = [
-  { key:'alvin', name:'阿爾文', img:'images/guard-alvin.png', weapon:'sword',  equip:'shield'  },
-  { key:'beck',  name:'貝克',   img:'images/guard-beck.png',  weapon:'dagger', equip:'torch'   },
-  { key:'carl',  name:'卡爾',   img:'images/guard-carl.png',  weapon:'spear',  equip:'lantern' },
-  { key:'dain',  name:'戴恩',   img:'images/guard-dain.png',  weapon:'bow',    equip:'bell'    },
+  { key:'alvin', name:'阿爾文', role:'城門守衛', img:'images/guard-alvin.png', weapon:'sword',  equip:'shield'  },
+  { key:'beck',  name:'貝克',   role:'城牆巡邏', img:'images/guard-beck.png',  weapon:'dagger', equip:'torch'   },
+  { key:'carl',  name:'卡爾',   role:'中庭守衛', img:'images/guard-carl.png',  weapon:'spear',  equip:'lantern' },
+  { key:'dain',  name:'戴恩',   role:'鐘樓守衛', img:'images/guard-dain.png',  weapon:'bow',    equip:'bell'    },
 ];
 const armoryWeapons = [
   { id:'sword',  emoji:'⚔️', name:'長劍' },
@@ -1586,44 +1611,47 @@ resetArmoryState();
 function buildArmoryHTML(){
   return `
     <p class="armory-intro-text">達米安管理軍械庫時留下的「夜間裝備配給表」四散一地。請依照牆上的《夜巡配給守則》,替四名守衛重新配好武器與裝備。</p>
-    <div class="armory-layout">
-      <div class="armory-rules">
-        <h4>夜巡配給守則</h4>
-        <ol>
-          <li>城門守衛必須攜帶盾牌,但不使用長槍。</li>
-          <li>使用長弓的守衛駐守高處,且不需要火把。</li>
-          <li>城牆巡邏者必須攜帶火把,使用短劍。</li>
-          <li>中庭守衛使用長槍,但不攜帶警鈴。</li>
-          <li>提燈配給使用長槍的守衛。</li>
-          <li>警鈴只配給能俯瞰整座神殿的守衛。</li>
-        </ol>
-      </div>
-      <div class="armory-main">
-        <div class="armory-guards">
-          ${armoryGuards.map(g => `
-            <div class="armory-guard-card">
-              <div class="armory-guard-portrait"><img src="${g.img}" alt="${g.name}"></div>
-              <div class="armory-slots">
-                <div class="armory-slot" id="armory-slot-${g.key}-weapon"
-                  ondragover="armorySlotDragOver(event)"
-                  ondragleave="armorySlotDragLeave(event)"
-                  ondrop="armorySlotDrop(event, '${g.key}', 'weapon')"></div>
-                <div class="armory-slot" id="armory-slot-${g.key}-equip"
-                  ondragover="armorySlotDragOver(event)"
-                  ondragleave="armorySlotDragLeave(event)"
-                  ondrop="armorySlotDrop(event, '${g.key}', 'equip')"></div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-        <div class="armory-pool" id="armory-pool"></div>
-        <div class="armory-submit-row">
-          <button class="submit-btn" onclick="checkArmory()">提交配給</button>
-          <p class="feedback-msg" id="armory-feedback"></p>
-        </div>
-        <p class="armory-complete-msg" id="armory-complete-msg" style="display:none;">配給完全正確——達米安的軍械庫記憶,似乎開始浮現。</p>
-      </div>
+    <div class="armory-rules">
+      <h4>夜巡配給守則</h4>
+      <ol>
+        <li>城門守衛必須攜帶盾牌；他的武器不是長槍。</li>
+        <li>城牆巡邏者攜帶火把；他使用的不是長劍，也不是長弓。</li>
+        <li>長槍使用者駐守的位置，比城門更深入神殿。</li>
+        <li>長弓只配給不需要離開崗位、且視野最開闊的守衛。</li>
+        <li>提燈使用者既不負責城門，也不負責城牆巡邏。</li>
+        <li>警鈴不與長槍一起配給。</li>
+      </ol>
     </div>
+    <div class="armory-grid">
+      <div></div>
+      ${armoryGuards.map(g => `
+        <div class="armory-portrait-cell">
+          <div class="armory-guard-portrait"><img src="${g.img}" alt="${g.name}"></div>
+          <span class="armory-guard-name">${g.name}</span>
+          <span class="armory-guard-role">${g.role}</span>
+        </div>
+      `).join('')}
+      <div class="armory-row-label">武器</div>
+      ${armoryGuards.map(g => `
+        <div class="armory-slot" id="armory-slot-${g.key}-weapon"
+          ondragover="armorySlotDragOver(event)"
+          ondragleave="armorySlotDragLeave(event)"
+          ondrop="armorySlotDrop(event, '${g.key}', 'weapon')"></div>
+      `).join('')}
+      <div class="armory-row-label">裝備</div>
+      ${armoryGuards.map(g => `
+        <div class="armory-slot" id="armory-slot-${g.key}-equip"
+          ondragover="armorySlotDragOver(event)"
+          ondragleave="armorySlotDragLeave(event)"
+          ondrop="armorySlotDrop(event, '${g.key}', 'equip')"></div>
+      `).join('')}
+    </div>
+    <div class="armory-pool" id="armory-pool"></div>
+    <div class="armory-submit-row">
+      <button class="submit-btn" onclick="checkArmory()">提交配給</button>
+      <p class="feedback-msg" id="armory-feedback"></p>
+    </div>
+    <p class="armory-complete-msg" id="armory-complete-msg" style="display:none;">配給完全正確——達米安的軍械庫記憶,似乎開始浮現。</p>
   `;
 }
 function armoryItemById(kind, id){
@@ -1639,17 +1667,25 @@ function renderArmoryPool(){
   if(!pool) return;
   const usedWeapons = armoryUsedIds('weapon');
   const usedEquip = armoryUsedIds('equip');
-  const items = [
-    ...armoryWeapons.filter(w => !usedWeapons.has(w.id)).map(w => ({ ...w, kind:'weapon' })),
-    ...armoryEquip.filter(e => !usedEquip.has(e.id)).map(e => ({ ...e, kind:'equip' })),
-  ];
-  pool.innerHTML = items.map(it => `
-    <div class="armory-chip" draggable="true" id="armory-chip-${it.kind}-${it.id}"
-      ondragstart="armoryChipDragStart(event, '${it.kind}', '${it.id}')"
+  const weaponItems = armoryWeapons.filter(w => !usedWeapons.has(w.id));
+  const equipItems = armoryEquip.filter(e => !usedEquip.has(e.id));
+  const renderChip = (it, kind) => `
+    <div class="armory-chip" draggable="true" id="armory-chip-${kind}-${it.id}"
+      ondragstart="armoryChipDragStart(event, '${kind}', '${it.id}')"
       ondragend="armoryChipDragEnd(event)">
       <span class="chip-emoji">${it.emoji}</span><span>${it.name}</span>
     </div>
-  `).join('');
+  `;
+  pool.innerHTML = `
+    <div class="armory-pool-row">
+      <span class="armory-pool-label">武器</span>
+      <div class="armory-pool-items">${weaponItems.map(w => renderChip(w, 'weapon')).join('')}</div>
+    </div>
+    <div class="armory-pool-row">
+      <span class="armory-pool-label">裝備</span>
+      <div class="armory-pool-items">${equipItems.map(e => renderChip(e, 'equip')).join('')}</div>
+    </div>
+  `;
 }
 function armoryChipDragStart(e, kind, id){
   armoryDragItem = { kind, id };
