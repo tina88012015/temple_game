@@ -827,12 +827,14 @@
   }
   .armory-portrait-cell{text-align:center;}
   .armory-guard-portrait{
-    width:100%;
-    border-radius:6px;
+    width:64px;
+    height:64px;
+    margin:0 auto;
+    border-radius:50%;
     overflow:hidden;
-    border:1px solid var(--card-border);
+    border:2px solid var(--gold);
   }
-  .armory-guard-portrait img{width:100%; display:block;}
+  .armory-guard-portrait img{width:100%; height:100%; object-fit:cover; display:block;}
   .armory-guard-name{
     display:block;
     font-family:'Cinzel',serif;
@@ -856,22 +858,26 @@
     writing-mode:horizontal-tb;
   }
   .armory-slot{
-    height:40px;
+    min-height:40px;
     border:2px dashed rgba(203,161,77,0.45);
     border-radius:6px;
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:19px;
+    gap:5px;
+    padding:4px 6px;
     background:rgba(0,0,0,0.22);
     transition:border-color .2s ease, box-shadow .2s ease;
   }
+  .armory-slot .chip-emoji{font-size:17px; flex-shrink:0;}
+  .armory-slot-text{font-size:11px; color:var(--parchment); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .armory-slot.drag-over{border-color:var(--gold-bright); box-shadow:0 0 8px rgba(232,200,119,0.55) inset;}
   .armory-slot.filled{border-style:solid; border-color:var(--gold); background:rgba(203,161,77,0.12);}
   .armory-slot.correct{border-style:solid; border-color:#9fd68c; background:rgba(159,214,140,0.12);}
   .armory-slot.wrong-flash{border-color:#c0524f; animation:damien-shake .4s ease;}
+  .armory-hint{text-align:center; font-size:11px; color:var(--parchment-dim); opacity:0.75; margin:14px 0 0;}
 
-  .armory-pool{margin-top:22px; padding-top:16px; border-top:1px solid var(--card-border);}
+  .armory-pool{margin-top:10px; padding-top:16px; border-top:1px solid var(--card-border);}
   .armory-pool-row{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
   .armory-pool-row:last-child{margin-bottom:0;}
   .armory-pool-label{
@@ -908,10 +914,13 @@
   }
   @media (max-width:640px){
     .armory-grid{grid-template-columns:34px repeat(4, 1fr); gap:8px 5px;}
+    .armory-guard-portrait{width:46px; height:46px;}
     .armory-guard-name{font-size:10.5px;}
     .armory-guard-role{font-size:9px;}
     .armory-row-label{font-size:10px;}
-    .armory-slot{height:32px; font-size:15px;}
+    .armory-slot{min-height:32px; padding:3px 3px;}
+    .armory-slot .chip-emoji{font-size:14px;}
+    .armory-slot-text{font-size:9px;}
     .armory-pool-label{flex-basis:34px; font-size:10px;}
   }
   .clue-point{position:absolute; width:0; height:0;}
@@ -1597,10 +1606,13 @@ let damienArmoryDone = localStorage.getItem('damienArmoryDone') === '1';
 let armoryAssign = {};
 let armoryLocked = {};
 let armoryDragItem = null;
+let armoryDragSource = null;
 
 function resetArmoryState(){
   armoryAssign = {};
   armoryLocked = {};
+  armoryDragItem = null;
+  armoryDragSource = null;
   armoryGuards.forEach(g => {
     armoryAssign[g.key] = { weapon:null, equip:null };
     armoryLocked[g.key] = { weapon:false, equip:false };
@@ -1646,7 +1658,8 @@ function buildArmoryHTML(){
           ondrop="armorySlotDrop(event, '${g.key}', 'equip')"></div>
       `).join('')}
     </div>
-    <div class="armory-pool" id="armory-pool"></div>
+    <p class="armory-hint">配好的物品可以點一下,或直接拖回下方取出重配。</p>
+    <div class="armory-pool" id="armory-pool" ondragover="armoryPoolDragOver(event)" ondrop="armoryPoolDrop(event)"></div>
     <div class="armory-submit-row">
       <button class="submit-btn" onclick="checkArmory()">提交配給</button>
       <p class="feedback-msg" id="armory-feedback"></p>
@@ -1689,12 +1702,14 @@ function renderArmoryPool(){
 }
 function armoryChipDragStart(e, kind, id){
   armoryDragItem = { kind, id };
+  armoryDragSource = null;
   e.dataTransfer.effectAllowed = 'move';
   e.currentTarget.classList.add('dragging');
 }
 function armoryChipDragEnd(e){
   e.currentTarget.classList.remove('dragging');
   armoryDragItem = null;
+  armoryDragSource = null;
 }
 function armorySlotDragOver(e){
   e.preventDefault();
@@ -1704,30 +1719,93 @@ function armorySlotDragOver(e){
 function armorySlotDragLeave(e){
   e.currentTarget.classList.remove('drag-over');
 }
+function armorySlotDragStart(e, guardKey, slotKind){
+  if(armoryLocked[guardKey][slotKind] || !armoryAssign[guardKey][slotKind]){ e.preventDefault(); return; }
+  armoryDragItem = { kind: slotKind, id: armoryAssign[guardKey][slotKind] };
+  armoryDragSource = { guardKey, slotKind };
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.classList.add('dragging');
+}
+function armorySlotDragEnd(e){
+  e.currentTarget.classList.remove('dragging');
+  armoryDragItem = null;
+  armoryDragSource = null;
+}
 function armorySlotDrop(e, guardKey, slotKind){
   e.preventDefault();
   const slotEl = document.getElementById(`armory-slot-${guardKey}-${slotKind}`);
   slotEl.classList.remove('drag-over');
   if(!armoryDragItem || armoryDragItem.kind !== slotKind) return;
   if(armoryLocked[guardKey][slotKind]) return;
+  const source = armoryDragSource;
+  if(source && source.guardKey === guardKey && source.slotKind === slotKind){
+    armoryDragItem = null;
+    armoryDragSource = null;
+    return;
+  }
+  const displaced = armoryAssign[guardKey][slotKind];
   armoryAssign[guardKey][slotKind] = armoryDragItem.id;
+  if(source){
+    armoryAssign[source.guardKey][source.slotKind] = displaced || null;
+    renderArmorySlot(source.guardKey, source.slotKind);
+  }
   armoryDragItem = null;
+  armoryDragSource = null;
   renderArmorySlot(guardKey, slotKind);
   renderArmoryPool();
   const fb = document.getElementById('armory-feedback');
   if(fb){ fb.textContent = ''; fb.className = 'feedback-msg'; }
 }
+function armoryPoolDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+function armoryPoolDrop(e){
+  e.preventDefault();
+  if(armoryDragSource){
+    armoryAssign[armoryDragSource.guardKey][armoryDragSource.slotKind] = null;
+    renderArmorySlot(armoryDragSource.guardKey, armoryDragSource.slotKind);
+  }
+  armoryDragItem = null;
+  armoryDragSource = null;
+  renderArmoryPool();
+}
+function armorySlotClear(guardKey, slotKind){
+  if(armoryLocked[guardKey][slotKind]) return;
+  armoryAssign[guardKey][slotKind] = null;
+  renderArmorySlot(guardKey, slotKind);
+  renderArmoryPool();
+}
 function renderArmorySlot(guardKey, slotKind){
   const slotEl = document.getElementById(`armory-slot-${guardKey}-${slotKind}`);
   if(!slotEl) return;
   const val = armoryAssign[guardKey][slotKind];
+  const locked = armoryLocked[guardKey][slotKind];
   if(val){
     const it = armoryItemById(slotKind, val);
-    slotEl.innerHTML = `<span class="chip-emoji">${it.emoji}</span>`;
+    slotEl.innerHTML = `<span class="chip-emoji">${it.emoji}</span><span class="armory-slot-text">${it.name}</span>`;
     slotEl.classList.add('filled');
+    if(locked){
+      slotEl.draggable = false;
+      slotEl.ondragstart = null;
+      slotEl.ondragend = null;
+      slotEl.onclick = null;
+      slotEl.style.cursor = 'default';
+    } else {
+      slotEl.draggable = true;
+      slotEl.style.cursor = 'grab';
+      slotEl.ondragstart = (e) => armorySlotDragStart(e, guardKey, slotKind);
+      slotEl.ondragend = (e) => armorySlotDragEnd(e);
+      slotEl.onclick = () => armorySlotClear(guardKey, slotKind);
+    }
   } else {
     slotEl.innerHTML = '';
     slotEl.classList.remove('filled');
+    slotEl.draggable = false;
+    slotEl.ondragstart = null;
+    slotEl.ondragend = null;
+    slotEl.onclick = null;
+    slotEl.style.cursor = '';
   }
 }
 function checkArmory(){
