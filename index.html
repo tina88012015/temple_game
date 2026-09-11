@@ -621,14 +621,6 @@
     transition:opacity .55s ease;
   }
   .memory-transition.show{opacity:1;}
-  @keyframes memoryFlicker{
-    0%,100%{opacity:1;}
-    18%{opacity:0.28;}
-    34%{opacity:1;}
-    52%{opacity:0.16;}
-    68%{opacity:1;}
-  }
-  .memory-flicker{animation:memoryFlicker .6s ease;}
   .reveal-crystal-wrap.crystal-burst{animation:crystal-burst-anim .55s ease forwards;}
   @keyframes crystal-burst-anim{
     0%{filter:brightness(1) drop-shadow(0 0 0 rgba(255,255,255,0));}
@@ -2696,18 +2688,14 @@ function closeEnding(){
 function finishTestimonyToTruth(){
   const overlay = document.getElementById('overlay');
   const veil = document.getElementById('memory-transition');
-  overlay.classList.add('memory-flicker');
+  veil.classList.add('show');
   setTimeout(() => {
-    overlay.classList.remove('memory-flicker');
-    veil.classList.add('show');
+    closeModal();
+    showTruthPage();
     setTimeout(() => {
-      closeModal();
-      showTruthPage();
-      setTimeout(() => {
-        veil.classList.remove('show');
-      }, 250);
-    }, 550);
-  }, 600);
+      veil.classList.remove('show');
+    }, 250);
+  }, 550);
 }
 
 /* ---------- 真相頁 ---------- */
