@@ -611,6 +611,24 @@
     transition:opacity .55s ease;
   }
   .truth-flash.show{opacity:1;}
+  .memory-transition{
+    position:fixed;
+    inset:0;
+    z-index:300;
+    background:#000;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .55s ease;
+  }
+  .memory-transition.show{opacity:1;}
+  @keyframes memoryFlicker{
+    0%,100%{opacity:1;}
+    18%{opacity:0.28;}
+    34%{opacity:1;}
+    52%{opacity:0.16;}
+    68%{opacity:1;}
+  }
+  .memory-flicker{animation:memoryFlicker .6s ease;}
   .reveal-crystal-wrap.crystal-burst{animation:crystal-burst-anim .55s ease forwards;}
   @keyframes crystal-burst-anim{
     0%{filter:brightness(1) drop-shadow(0 0 0 rgba(255,255,255,0));}
@@ -1183,6 +1201,9 @@
 
 <!-- White flash transition -->
 <div class="truth-flash" id="truth-flash"></div>
+
+<!-- Memory-fragment transition veil -->
+<div class="memory-transition" id="memory-transition"></div>
 
 <!-- Modal overlay -->
 <div class="overlay" id="overlay">
@@ -2674,14 +2695,19 @@ function closeEnding(){
 
 function finishTestimonyToTruth(){
   const overlay = document.getElementById('overlay');
-  overlay.style.transition = 'opacity .5s ease';
-  overlay.style.opacity = '0';
+  const veil = document.getElementById('memory-transition');
+  overlay.classList.add('memory-flicker');
   setTimeout(() => {
-    closeModal();
-    overlay.style.transition = '';
-    overlay.style.opacity = '';
-    showTruthPage(true);
-  }, 500);
+    overlay.classList.remove('memory-flicker');
+    veil.classList.add('show');
+    setTimeout(() => {
+      closeModal();
+      showTruthPage();
+      setTimeout(() => {
+        veil.classList.remove('show');
+      }, 250);
+    }, 550);
+  }, 600);
 }
 
 /* ---------- 真相頁 ---------- */
