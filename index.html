@@ -525,12 +525,22 @@
     transform:translateY(6px);
     transition:opacity 1.3s ease, transform 1.3s ease;
     font-size:15.5px;
-    line-height:2.3;
+    line-height:1.95;
     color:var(--parchment);
     text-align:center;
-    margin:0 0 26px;
+    margin:0 0 18px;
   }
   .ending-line.show{opacity:1; transform:translateY(0);}
+  .calm-line{
+    opacity:0;
+    transition:opacity 1.8s ease;
+    font-size:15.5px;
+    line-height:1.95;
+    color:var(--parchment);
+    text-align:center;
+    margin:0 0 18px;
+  }
+  .calm-line.show{opacity:1;}
   .ending-return-btn{
     opacity:0;
     display:none;
@@ -659,7 +669,7 @@
     letter-spacing:0.35em;
     color:var(--parchment-dim);
     font-size:13px;
-    margin:14px 0 0 !important;
+    margin:0;
   }
 
   /* Graham - scene hotspots */
@@ -2616,8 +2626,7 @@ function submitTestimony(){
     renderTestimonyBoard();
     if(fb){ fb.textContent = '【證詞重構完成】'; fb.className = 'feedback-msg correct'; }
     setTimeout(() => {
-      closeModal();
-      showTruthPage();
+      finishTestimonyToTruth();
     }, 1500);
   } else {
     testimonyWrongAttempts++;
@@ -2663,6 +2672,18 @@ function closeEnding(){
   document.body.style.overflow = '';
 }
 
+function finishTestimonyToTruth(){
+  const overlay = document.getElementById('overlay');
+  overlay.style.transition = 'opacity .5s ease';
+  overlay.style.opacity = '0';
+  setTimeout(() => {
+    closeModal();
+    overlay.style.transition = '';
+    overlay.style.opacity = '';
+    showTruthPage(true);
+  }, 500);
+}
+
 /* ---------- 真相頁 ---------- */
 const truthLines = [
   '東門從未發生過戰鬥。',
@@ -2685,7 +2706,7 @@ const truthCrystalLines = [
   '但被遺忘,是否也是他計畫的一部分?',
   '這一次,由你決定。',
 ];
-function showTruthPage(){
+function showTruthPage(fadeIn){
   const overlay = document.getElementById('truth-overlay');
   const textBox = document.getElementById('truth-text');
   const stage2 = document.getElementById('truth-stage2');
@@ -2699,8 +2720,15 @@ function showTruthPage(){
   textBox.style.opacity = '1';
   textBox.style.display = 'block';
   textBox.innerHTML = truthLines.map((l, i) => `<p class="ending-line" id="truth-line-${i}">${l}</p>`).join('');
+  if(fadeIn){
+    overlay.style.transition = 'opacity .7s ease';
+    overlay.style.opacity = '0';
+  }
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
+  if(fadeIn){
+    requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+  }
 
   truthLines.forEach((l, i) => {
     setTimeout(() => {
@@ -2797,7 +2825,7 @@ function showFinalEnding(bg, title, lines){
   textBox.style.transition = '';
   textBox.style.opacity = '1';
   textBox.innerHTML = `<p class="final-ending-title">${title}</p>` +
-    lines.map((l, i) => `<p class="ending-line" id="final-ending-line-${i}">${l}</p>`).join('');
+    lines.map((l, i) => `<p class="calm-line" id="final-ending-line-${i}">${l}</p>`).join('');
   returnBtn.classList.remove('show');
   returnBtn.style.display = 'none';
   arrow.classList.remove('show');
@@ -2827,9 +2855,9 @@ function showFinalEnding(bg, title, lines){
             setTimeout(() => {
               arrow.style.display = 'flex';
               requestAnimationFrame(() => arrow.classList.add('show'));
-            }, 1800);
+            }, 2000);
           }
-        }, i * 1900);
+        }, i * 2100);
       });
     }, 500);
   }, 550);
@@ -2845,35 +2873,41 @@ function advanceToEpilogue(){
 
   arrow.classList.remove('show');
   arrow.style.display = 'none';
-  textBox.style.transition = 'opacity 1.2s ease';
+  textBox.style.transition = 'opacity 1.4s ease';
   textBox.style.opacity = '0';
 
   setTimeout(() => {
     textBox.style.transition = '';
     textBox.style.opacity = '1';
     textBox.innerHTML =
-      epilogueLines.map((l, i) => `<p class="ending-line" id="epilogue-line-${i}">${l}</p>`).join('') +
-      `<p class="final-ending-title ending-line" id="epilogue-title" style="margin-top:34px;">《破碎神殿的低語》</p>` +
-      `<p class="epilogue-end-mark ending-line" id="epilogue-end">— END —</p>`;
+      epilogueLines.map((l, i) => `<p class="calm-line" id="epilogue-line-${i}">${l}</p>`).join('') +
+      `<p class="final-ending-title calm-line" id="epilogue-title" style="margin-top:36px;">《破碎神殿的低語》</p>` +
+      `<p class="epilogue-end-mark calm-line" id="epilogue-end" style="margin-top:8px;">— END —</p>`;
 
+    const lineGap = 2100;
     epilogueLines.forEach((l, i) => {
       setTimeout(() => {
         const el = document.getElementById(`epilogue-line-${i}`);
         if(el) el.classList.add('show');
-      }, i * 1900);
+      }, i * lineGap);
     });
-    const afterLines = epilogueLines.length * 1900;
+    const linesDone = (epilogueLines.length - 1) * lineGap + 1800;
+    const titleAt = linesDone + 1000;
     setTimeout(() => {
       const t = document.getElementById('epilogue-title');
       if(t) t.classList.add('show');
-    }, afterLines + 400);
+    }, titleAt);
+    const endAt = titleAt + 1800 + 1000;
     setTimeout(() => {
       const e = document.getElementById('epilogue-end');
       if(e) e.classList.add('show');
+    }, endAt);
+    const btnAt = endAt + 1200 + 1100;
+    setTimeout(() => {
       returnBtn.style.display = 'inline-block';
       requestAnimationFrame(() => returnBtn.classList.add('show'));
-    }, afterLines + 1600);
-  }, 1200);
+    }, btnAt);
+  }, 1400);
 }
 function closeFinalEnding(){
   document.getElementById('final-ending-overlay').classList.remove('open');
