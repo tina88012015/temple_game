@@ -924,6 +924,78 @@
     .armory-pool-label{flex-basis:34px; font-size:10px;}
   }
   .clue-point{position:absolute; width:0; height:0;}
+
+  /* 歐里安 - 封印之門 */
+  .seal-intro-text{text-align:center; color:var(--parchment-dim); font-size:13.5px; margin:0 0 16px; line-height:1.8;}
+  .seal-layout{display:flex; gap:32px; align-items:flex-start; justify-content:center; flex-wrap:wrap;}
+  .seal-left{display:flex; flex-direction:column; align-items:center; flex:0 0 auto;}
+  .seal-wrap{position:relative; width:min(360px, 78vw); height:min(360px, 78vw);}
+  .seal-wrap svg{width:100%; height:100%; display:block; overflow:visible;}
+  .seal-tablet{
+    background:rgba(0,0,0,0.28);
+    border:1px solid var(--card-border);
+    border-radius:8px;
+    padding:18px 20px;
+    flex:0 0 240px;
+    margin-top:8px;
+  }
+  .seal-tablet h4{
+    font-family:'Cinzel',serif;
+    font-size:13.5px;
+    letter-spacing:0.1em;
+    color:var(--gold-bright);
+    text-align:center;
+    margin:0 0 14px;
+  }
+  .seal-tablet p{font-size:13px; line-height:1.95; color:var(--parchment-dim); margin:0;}
+  @media (max-width:700px){
+    .seal-layout{flex-direction:column; align-items:center;}
+    .seal-tablet{flex:none; width:min(360px,84vw); margin-top:18px;}
+  }
+  .ring{
+    transform-origin:180px 180px;
+    transition:transform .4s cubic-bezier(.4,1.4,.4,1), color .5s ease;
+    color:var(--rune-dim, rgba(203,161,77,0.5));
+  }
+  .ring.lit{ color:var(--gold-bright); filter:url(#aurien-glyph-glow); }
+  .ring-track{ fill:none; stroke:rgba(203,161,77,0.18); stroke-width:1.3; transition:stroke .3s ease;}
+  .ring.hovering .ring-track{ stroke:rgba(232,200,119,0.4);}
+  .ring.lit .ring-track{ stroke:rgba(232,200,119,0.7);}
+  .ring-hit{ fill:none; stroke:transparent; stroke-width:24; cursor:pointer;}
+  .seal-glyph-stroke{ fill:none; stroke:currentColor; stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round;}
+  .seal-glyph-fill{ fill:currentColor; stroke:none;}
+  .seal-glyph-vein{ fill:none; stroke:var(--ink-deep); stroke-width:1; opacity:0.45;}
+  .seal-core{ color:var(--rune-dim, rgba(203,161,77,0.5)); transition:color .5s ease;}
+  .seal-core.lit{ color:var(--gold-bright); filter:url(#aurien-glyph-glow);}
+  .seal-core-ring{ fill:none; stroke:currentColor; stroke-width:1.3; opacity:0.6;}
+  .seal-check-btn{
+    margin-top:20px;
+    background:transparent;
+    border:1px solid var(--gold);
+    color:var(--gold-bright);
+    font-family:'Cinzel',serif;
+    font-size:13px;
+    letter-spacing:0.1em;
+    padding:9px 24px;
+    border-radius:4px;
+    cursor:pointer;
+    transition:background .2s ease;
+  }
+  .seal-check-btn:hover{ background:rgba(203,161,77,0.15);}
+  .seal-check-btn:disabled{ opacity:0.4; cursor:default;}
+  .seal-feedback{ min-height:20px; margin-top:14px; font-size:13px; color:var(--parchment-dim); opacity:0; transition:opacity .35s ease;}
+  .seal-feedback.show{opacity:1;}
+  .seal-success-msg{
+    margin-top:2px;
+    font-family:'Cinzel',serif;
+    font-size:15.5px;
+    letter-spacing:0.08em;
+    color:var(--gold-bright);
+    opacity:0;
+    transition:opacity .8s ease;
+  }
+  .seal-success-msg.show{opacity:1;}
+  .aurien-final-img{width:100%; border-radius:8px; border:1px solid var(--card-border); display:block; margin-top:6px;}
   .clue-spark{
     position:absolute; top:-16px; left:-16px;
     width:32px; height:32px; border-radius:50%; padding:0; cursor:pointer;
@@ -1209,6 +1281,7 @@ renderRoster();
 function preloadGameImages(){
   const paths = [
     'images/aurien.png','images/damien.png','images/fiona.png','images/graham.png','images/livia.png','images/vesper.png',
+    'images/aurien-final-memory.png',
     'images/temple-ruins.png','images/market-scene.png','images/truth-background.png','images/truth-ending-day.png','images/truth-ending-night.png',
     'images/graham-shelf.png','images/graham-ledger-closed.png','images/graham-ledger-open.png',
     'images/scroll-closed.png','images/scroll-official-record.png','images/scroll-armory.png','images/scroll-medical.png','images/duty-report.png','images/damien-journal.png',
@@ -1268,6 +1341,8 @@ function openModal(key){
   if(c.type === 'memory-puzzle'){
     currentOrder = [3,1,5,2,4];
     renderFragments();
+    resetSealState();
+    initSealRings();
   } else if(c.type === 'scrolls'){
     resetArmoryState();
     renderArmoryPool();
@@ -1372,12 +1447,21 @@ function buildMemoryPuzzleHTML(c){
         <button class="submit-btn" onclick="checkOrder()">修復記憶</button>
         <p class="feedback-msg" id="feedback"></p>
       </div>
-      <div id="aurien-success" style="display:none;">
+      <div id="aurien-seal" style="display:none;">
+        <p class="seal-intro-text">歐里安最後的記憶被封存在一扇古老石門後。門中央有一個由 4 層圓環構成的神殿紋章,但三十年前神殿毀滅時,圓環全部錯位。</p>
+        ${buildSealHTML()}
+      </div>
+      <div id="aurien-crystal" style="display:none; text-align:center;">
         <div class="reveal-crystal-wrap">
-          <img src="images/mila-fragment-complete.png" alt="完整的記憶水晶">
+          <img src="images/mila-fragment-complete.png" alt="歐里安記憶水晶">
           <span class="reveal-sparkle rs1"></span><span class="reveal-sparkle rs2"></span><span class="reveal-sparkle rs3"></span><span class="reveal-sparkle rs4"></span><span class="reveal-sparkle rs5"></span>
         </div>
-        <div class="reveal-text show" id="reveal" style="text-align:center;">
+        <p style="color:var(--gold-bright); font-size:13.5px; margin:14px 0;">封印已解除,歐里安記憶水晶浮現。</p>
+        <button class="fragment-reveal-btn" onclick="revealAurienFinal()">點擊查看</button>
+      </div>
+      <div id="aurien-final" style="display:none;">
+        <img class="aurien-final-img" src="images/aurien-final-memory.png" alt="歐里安最後的記憶">
+        <div class="reveal-text show" style="text-align:center;">
           <p>已修復歐里安的記憶水晶。</p>
           <p>他所知道的,你已經知曉——現在,是時候把所有人的證詞放在一起,拼出最後的真相了。</p>
         </div>
@@ -1442,16 +1526,297 @@ function checkOrder(){
   const isCorrect = currentOrder.every((id, i) => id === correct[i]);
   if(isCorrect){
     document.getElementById('aurien-puzzle').style.display = 'none';
-    document.getElementById('aurien-success').style.display = 'block';
-    if(!completed.has('aurien')){
-      completed.add('aurien');
-      saveCompleted();
-      renderRoster();
-    }
+    document.getElementById('aurien-seal').style.display = 'block';
   } else {
     const feedback = document.getElementById('feedback');
     feedback.textContent = '順序不對,因果對不上。';
     feedback.className = 'feedback-msg wrong';
+  }
+}
+
+/* ---------- 歐里安 · 封印之門 ---------- */
+const SEAL_CX = 180, SEAL_CY = 180;
+const SEAL_DIR = { TOP:0, RIGHT:90, BOTTOM:180, LEFT:270 };
+
+function sealSunGlyph(cx,cy,s){
+  const r=10.3*s; let rays='';
+  for(let i=0;i<8;i++){
+    const a=i*45*Math.PI/180;
+    const x1=cx+Math.cos(a)*(r+2.5), y1=cy+Math.sin(a)*(r+2.5);
+    const x2=cx+Math.cos(a)*(r+2.5+5*s), y2=cy+Math.sin(a)*(r+2.5+5*s);
+    rays+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
+  }
+  return `<g class="seal-glyph-stroke"><circle cx="${cx}" cy="${cy}" r="${r}"/>${rays}</g>`;
+}
+let sealMoonMaskN = 0;
+function sealMoonGlyph(cx,cy,s){
+  const r=11*s; const id='aurien-moon-mask-'+(sealMoonMaskN++);
+  return `<mask id="${id}"><circle cx="${cx}" cy="${cy}" r="${r}" fill="white"/><circle cx="${(cx+r*0.78).toFixed(1)}" cy="${(cy-r*0.5).toFixed(1)}" r="${(r*0.92).toFixed(1)}" fill="black"/></mask>
+    <circle class="seal-glyph-fill" cx="${cx}" cy="${cy}" r="${r}" mask="url(#${id})"/>
+    <path class="seal-glyph-vein" d="M ${(cx-r*0.15).toFixed(1)} ${(cy-r*0.95).toFixed(1)} A ${r} ${r} 0 0 0 ${(cx-r*0.15).toFixed(1)} ${(cy+r*0.95).toFixed(1)}"/>`;
+}
+function sealWingGlyph(cx,cy,dir,s){
+  function bladeLine(angDeg,len,curve){
+    const rad = angDeg*Math.PI/180;
+    const dx = dir*Math.sin(rad), dy = -Math.cos(rad);
+    const ex = dx*len*s, ey = dy*len*s;
+    const px = dy, py = -dx;
+    const cxp = dx*len*0.55*s + px*curve*s;
+    const cyp = dy*len*0.55*s + py*curve*s;
+    return `M 0 0 Q ${cxp.toFixed(1)} ${cyp.toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`;
+  }
+  const blades = [
+    {ang:-36, len:16.3, curve:4.3},
+    {ang:-14, len:14.2, curve:3},
+    {ang:8,   len:11.6, curve:1.7},
+    {ang:28,  len:8.6,  curve:0.9},
+  ];
+  const paths = blades.map(b => `<path class="seal-glyph-stroke" d="${bladeLine(b.ang,b.len,b.curve)}"/>`).join('');
+  return `<g transform="translate(${cx.toFixed(1)},${(cy+6*s).toFixed(1)})">${paths}</g>`;
+}
+function sealStarGlyph(cx,cy,s){
+  const rO=9.4*s, rI=3.4*s; let pts=[];
+  for(let i=0;i<8;i++){
+    const a=i*45*Math.PI/180 - Math.PI/2;
+    const rr = i%2===0? rO:rI;
+    pts.push(`${(cx+rr*Math.cos(a)).toFixed(1)},${(cy+rr*Math.sin(a)).toFixed(1)}`);
+  }
+  return `<polygon class="seal-glyph-fill" points="${pts.join(' ')}"/>`;
+}
+function sealEyeGlyph(cx,cy,s){
+  const w=14.5*s,h=7.2*s;
+  const outline=`M ${cx-w} ${cy} Q ${cx} ${cy-h*1.7} ${cx+w} ${cy} Q ${cx} ${cy+h*1.7} ${cx-w} ${cy} Z`;
+  const tail = `<path d="M ${cx} ${cy+h*1.5} q -2.5 5 -6 6.5"/>`;
+  return `<g class="seal-glyph-stroke"><path d="${outline}"/>${tail}</g><circle class="seal-glyph-fill" cx="${cx}" cy="${cy}" r="${h*0.5}"/>`;
+}
+function sealFlameGlyph(cx,cy,s){
+  const d=`M ${cx} ${cy-11*s}
+    C ${cx+6.8*s} ${cy-4.3*s} ${cx+5.1*s} ${cy+2.6*s} ${cx+2.6*s} ${cy+5.1*s}
+    C ${cx+4.3*s} ${cy+1.7*s} ${cx+1.7*s} ${cy-0.9*s} ${cx} ${cy-2.6*s}
+    C ${cx-1.7*s} ${cy-0.9*s} ${cx-4.3*s} ${cy+1.7*s} ${cx-2.6*s} ${cy+5.1*s}
+    C ${cx-5.1*s} ${cy+2.6*s} ${cx-6.8*s} ${cy-4.3*s} ${cx} ${cy-11*s} Z`;
+  return `<path class="seal-glyph-fill" d="${d}"/>`;
+}
+function sealFeatherGlyph(cx,cy,s){
+  const d=`M ${cx} ${cy-12*s} Q ${cx+5.1*s} ${cy-4.3*s} ${cx} ${cy+12*s} Q ${cx-5.1*s} ${cy-4.3*s} ${cx} ${cy-12*s} Z`;
+  const spine=`M ${cx} ${cy-10.3*s} L ${cx} ${cy+10.3*s}`;
+  return `<path class="seal-glyph-fill" d="${d}"/><path class="seal-glyph-vein" d="${spine}"/>`;
+}
+function sealKeyGlyph(cx,cy,s){
+  const headR=4.7*s, shaft=11.1*s;
+  return `<g class="seal-glyph-stroke">
+    <circle cx="${cx}" cy="${cy-shaft/2-headR+1.7*s}" r="${headR}"/>
+    <line x1="${cx}" y1="${cy-shaft/2+1.7*s}" x2="${cx}" y2="${cy+shaft/2}"/>
+    <line x1="${cx}" y1="${cy+shaft/2}" x2="${cx-3.4*s}" y2="${cy+shaft/2}"/>
+    <line x1="${cx}" y1="${(cy+shaft/2-3.4*s).toFixed(1)}" x2="${cx-2.6*s}" y2="${(cy+shaft/2-3.4*s).toFixed(1)}"/>
+  </g>`;
+}
+function sealRuneGlyph(cx,cy,s){
+  return `<g class="seal-glyph-stroke">
+    <line x1="${cx}" y1="${cy-10.3*s}" x2="${cx}" y2="${cy+10.3*s}"/>
+    <line x1="${cx}" y1="${cy-10.3*s}" x2="${cx+6*s}" y2="${cy-3.4*s}"/>
+    <line x1="${cx}" y1="${cy+1.7*s}" x2="${cx+6*s}" y2="${cy+8.6*s}"/>
+  </g>`;
+}
+function sealLeafGlyph(cx,cy,s){
+  const d=`M ${cx} ${cy-10.3*s} Q ${cx+8.6*s} ${cy} ${cx} ${cy+10.3*s} Q ${cx-8.6*s} ${cy} ${cx} ${cy-10.3*s} Z`;
+  const vein=`M ${cx} ${cy-8.6*s} L ${cx} ${cy+8.6*s}`;
+  return `<path class="seal-glyph-fill" d="${d}"/><path class="seal-glyph-vein" d="${vein}"/>`;
+}
+function sealCrownGlyph(cx,cy,s){
+  const w=10.3*s,h=6.9*s;
+  const d=`M ${cx-w} ${(cy+h).toFixed(1)} L ${cx-w} ${cy} L ${(cx-w*0.5).toFixed(1)} ${(cy+h*0.4).toFixed(1)} L ${cx} ${(cy-h).toFixed(1)} L ${(cx+w*0.5).toFixed(1)} ${(cy+h*0.4).toFixed(1)} L ${cx+w} ${cy} L ${cx+w} ${(cy+h).toFixed(1)} Z`;
+  return `<path class="seal-glyph-fill" d="${d}"/>`;
+}
+function sealDropGlyph(cx,cy,s){
+  const d=`M ${cx} ${cy-10.3*s} C ${cx+6*s} ${cy-1.7*s} ${cx+6*s} ${cy+6*s} ${cx} ${cy+10.3*s} C ${cx-6*s} ${cy+6*s} ${cx-6*s} ${cy-1.7*s} ${cx} ${cy-10.3*s} Z`;
+  return `<path class="seal-glyph-fill" d="${d}"/>`;
+}
+function sealBellGlyph(cx,cy,s){
+  const d=`M ${cx-6*s} ${cy+4.3*s} Q ${cx-6*s} ${cy-7.7*s} ${cx} ${cy-7.7*s} Q ${cx+6*s} ${cy-7.7*s} ${cx+6*s} ${cy+4.3*s} Z`;
+  return `<g><path class="seal-glyph-fill" d="${d}"/>
+    <line class="seal-glyph-vein" x1="${cx-6.9*s}" y1="${cy+4.3*s}" x2="${cx+6.9*s}" y2="${cy+4.3*s}"/>
+    <circle class="seal-glyph-fill" cx="${cx}" cy="${(cy+6.9*s).toFixed(1)}" r="${1.2*s}"/></g>`;
+}
+function sealGemGlyph(cx,cy,s){
+  const w=7.7*s,h=11.1*s;
+  const d=`M ${cx} ${(cy-h).toFixed(1)} L ${(cx+w).toFixed(1)} ${(cy-h*0.15).toFixed(1)} L ${cx} ${(cy+h).toFixed(1)} L ${(cx-w).toFixed(1)} ${(cy-h*0.15).toFixed(1)} Z`;
+  const facet1=`M ${(cx-w).toFixed(1)} ${(cy-h*0.15).toFixed(1)} L ${cx} ${(cy-h*0.4).toFixed(1)} L ${(cx+w).toFixed(1)} ${(cy-h*0.15).toFixed(1)}`;
+  const facet2=`M ${cx} ${(cy-h*0.4).toFixed(1)} L ${cx} ${(cy+h).toFixed(1)}`;
+  return `<path class="seal-glyph-fill" d="${d}"/><path class="seal-glyph-vein" d="${facet1}"/><path class="seal-glyph-vein" d="${facet2}"/>`;
+}
+function sealCoreGlyph(cx,cy,s){
+  const r=13*s;
+  const d1=`M ${(cx-r*0.58).toFixed(1)} ${(cy-r*0.58).toFixed(1)} L ${(cx+r*0.58).toFixed(1)} ${(cy+r*0.58).toFixed(1)}`;
+  const d2=`M ${(cx+r*0.58).toFixed(1)} ${(cy-r*0.58).toFixed(1)} L ${(cx-r*0.58).toFixed(1)} ${(cy+r*0.58).toFixed(1)}`;
+  return `<g class="seal-glyph-stroke"><circle cx="${cx}" cy="${cy}" r="${r}"/><path d="${d1}"/><path d="${d2}"/></g>`;
+}
+
+const sealGlyphMakers = {
+  sun:(cx,cy,s)=>sealSunGlyph(cx,cy,s),
+  moon:(cx,cy,s)=>sealMoonGlyph(cx,cy,s),
+  wingL:(cx,cy,s)=>sealWingGlyph(cx,cy,1,s),
+  wingR:(cx,cy,s)=>sealWingGlyph(cx,cy,-1,s),
+  star:(cx,cy,s)=>sealStarGlyph(cx,cy,s),
+  eyeMemory:(cx,cy,s)=>sealEyeGlyph(cx,cy,s),
+  gem:(cx,cy,s)=>sealGemGlyph(cx,cy,s),
+  flame:(cx,cy,s)=>sealFlameGlyph(cx,cy,s),
+  feather:(cx,cy,s)=>sealFeatherGlyph(cx,cy,s),
+  key:(cx,cy,s)=>sealKeyGlyph(cx,cy,s),
+  rune:(cx,cy,s)=>sealRuneGlyph(cx,cy,s),
+  leaf:(cx,cy,s)=>sealLeafGlyph(cx,cy,s),
+  crown:(cx,cy,s)=>sealCrownGlyph(cx,cy,s),
+  drop:(cx,cy,s)=>sealDropGlyph(cx,cy,s),
+  bell:(cx,cy,s)=>sealBellGlyph(cx,cy,s),
+};
+
+// 每環 symbols 依本地角度 0/90/180/270(上/右/下/左)排列,關鍵符號固定放在 0(上)
+const sealRingDefs = [
+  { key:'ring1', radius:148, initial:90,
+    symbols:[ {ang:0,glyph:'sun'}, {ang:90,glyph:'wingR'}, {ang:180,glyph:'star'}, {ang:270,glyph:'moon'} ],
+    target:{ dir:SEAL_DIR.TOP } },
+  { key:'ring2', radius:113, initial:180,
+    symbols:[ {ang:0,glyph:'eyeMemory'}, {ang:90,glyph:'flame'}, {ang:180,glyph:'feather'}, {ang:270,glyph:'key'} ],
+    target:{ dir:SEAL_DIR.TOP } },
+  { key:'ring3', radius:80, initial:270,
+    symbols:[ {ang:0,glyph:'wingL'}, {ang:90,glyph:'rune'}, {ang:180,glyph:'leaf'}, {ang:270,glyph:'crown'} ],
+    target:{ dir:SEAL_DIR.BOTTOM } },
+  { key:'ring4', radius:48, initial:180,
+    symbols:[ {ang:0,glyph:'moon'}, {ang:90,glyph:'drop'}, {ang:180,glyph:'gem'}, {ang:270,glyph:'bell'} ],
+    target:{ dir:SEAL_DIR.LEFT } },
+];
+
+let sealRingState = {};
+let sealSolved = false;
+
+function sealCorrectRotation(def){
+  const keyAng = def.symbols[0].ang;
+  return ((def.target.dir - keyAng) % 360 + 360) % 360;
+}
+function resetSealState(){
+  sealSolved = false;
+  sealRingDefs.forEach(def => sealRingState[def.key] = def.initial);
+}
+resetSealState();
+
+function buildSealRingSVG(def){
+  let inner = `<circle class="ring-track" cx="${SEAL_CX}" cy="${SEAL_CY}" r="${def.radius}"/>`;
+  def.symbols.forEach(sym=>{
+    const rad = sym.ang * Math.PI/180;
+    const x = SEAL_CX + def.radius*Math.sin(rad);
+    const y = SEAL_CY - def.radius*Math.cos(rad);
+    inner += sealGlyphMakers[sym.glyph](x, y, 1);
+  });
+  return `<g class="ring" id="ring-${def.key}">${inner}</g>`;
+}
+function buildSealCore(){
+  return `<circle class="seal-core-ring" cx="${SEAL_CX}" cy="${SEAL_CY}" r="26"/>${sealCoreGlyph(SEAL_CX,SEAL_CY,1.3)}`;
+}
+function buildSealHitAreas(){
+  return sealRingDefs.map(def => `
+    <circle class="ring-hit" cx="${SEAL_CX}" cy="${SEAL_CY}" r="${def.radius}"
+      onclick="rotateSealRing('${def.key}')"
+      onmouseenter="setSealHover('${def.key}',true)" onmouseleave="setSealHover('${def.key}',false)"/>
+  `).join('');
+}
+function setSealHover(key,on){
+  const el = document.getElementById('ring-'+key);
+  if(el) el.classList.toggle('hovering', on);
+}
+function buildSealHTML(){
+  return `
+    <div class="seal-layout">
+      <div class="seal-left">
+        <div class="seal-wrap">
+          <svg viewBox="0 0 360 360" id="aurien-seal-svg">
+            <defs>
+              <filter id="aurien-glyph-glow" x="-60%" y="-60%" width="220%" height="220%">
+                <feGaussianBlur stdDeviation="1.3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <radialGradient id="aurien-stoneGradient" cx="50%" cy="45%" r="65%">
+                <stop offset="0%" stop-color="#2c2740"/>
+                <stop offset="70%" stop-color="#1c1828"/>
+                <stop offset="100%" stop-color="#100e18"/>
+              </radialGradient>
+            </defs>
+            <circle cx="${SEAL_CX}" cy="${SEAL_CY}" r="176" fill="url(#aurien-stoneGradient)"/>
+            <circle cx="${SEAL_CX}" cy="${SEAL_CY}" r="175" fill="none" stroke="rgba(203,161,77,0.2)" stroke-width="2"/>
+            <g id="aurien-rings">${sealRingDefs.map(buildSealRingSVG).join('')}</g>
+            <g id="aurien-seal-core" class="seal-core">${buildSealCore()}</g>
+            <g id="aurien-hit-areas">${buildSealHitAreas()}</g>
+          </svg>
+        </div>
+        <button class="seal-check-btn" id="seal-check-btn" onclick="checkSealPuzzle()">檢查封印</button>
+        <p class="seal-feedback" id="seal-feedback"></p>
+        <p class="seal-success-msg" id="seal-success-msg">封印已解除。</p>
+      </div>
+      <div class="seal-tablet">
+        <h4>《封印石碑》</h4>
+        <p>
+          Ⅰ｜日輪高懸,星辰沉落。<br>
+          Ⅱ｜記憶逐日,目之所向,與日同歸。<br>
+          Ⅲ｜羽翼護憶,與目相背而立。<br>
+          Ⅳ｜月隨翼行,循輪而轉,緊隨其後。
+        </p>
+      </div>
+    </div>
+  `;
+}
+function initSealRings(){
+  sealRingDefs.forEach(def => {
+    const el = document.getElementById('ring-'+def.key);
+    if(el) el.style.transform = `rotate(${sealRingState[def.key]}deg)`;
+    if(el) el.classList.remove('lit');
+  });
+  const core = document.getElementById('aurien-seal-core');
+  if(core) core.classList.remove('lit');
+  const btn = document.getElementById('seal-check-btn');
+  if(btn) btn.disabled = false;
+  const msg = document.getElementById('seal-success-msg');
+  if(msg) msg.classList.remove('show');
+  const fb = document.getElementById('seal-feedback');
+  if(fb){ fb.textContent=''; fb.classList.remove('show'); }
+}
+function rotateSealRing(key){
+  if(sealSolved) return;
+  sealRingState[key] = (sealRingState[key] + 90) % 360;
+  const el = document.getElementById('ring-'+key);
+  if(el) el.style.transform = `rotate(${sealRingState[key]}deg)`;
+}
+function checkSealPuzzle(){
+  if(sealSolved) return;
+  const allCorrect = sealRingDefs.every(def => sealRingState[def.key] === sealCorrectRotation(def));
+  const fb = document.getElementById('seal-feedback');
+  if(allCorrect){
+    sealSolved = true;
+    document.getElementById('seal-check-btn').disabled = true;
+    const order = sealRingDefs.map(d=>d.key);
+    order.forEach((key,i)=>{
+      setTimeout(()=>{ document.getElementById('ring-'+key).classList.add('lit'); }, i*220);
+    });
+    const coreDelay = order.length*220;
+    setTimeout(()=>{ document.getElementById('aurien-seal-core').classList.add('lit'); }, coreDelay);
+    setTimeout(()=>{
+      document.getElementById('seal-success-msg').classList.add('show');
+    }, coreDelay+500);
+    setTimeout(()=>{
+      document.getElementById('aurien-seal').style.display = 'none';
+      document.getElementById('aurien-crystal').style.display = 'block';
+    }, coreDelay+2200);
+  } else {
+    fb.textContent = '封印沒有回應。';
+    fb.classList.add('show');
+    setTimeout(()=>{ fb.classList.remove('show'); }, 1600);
+  }
+}
+function revealAurienFinal(){
+  document.getElementById('aurien-crystal').style.display = 'none';
+  document.getElementById('aurien-final').style.display = 'block';
+  if(!completed.has('aurien')){
+    completed.add('aurien');
+    saveCompleted();
+    renderRoster();
   }
 }
 
