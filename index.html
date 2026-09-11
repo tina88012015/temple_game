@@ -209,8 +209,15 @@
     color:var(--parchment-dim);
     opacity:0.5;
     letter-spacing:0.5px;
-    z-index:5;
+    z-index:500;
     pointer-events:none;
+  }
+  .device-hint{
+    margin-top:14px;
+    font-size:11.5px;
+    color:var(--parchment-dim);
+    opacity:0.65;
+    letter-spacing:0.5px;
   }
 
   /* Modal overlay */
@@ -1131,6 +1138,7 @@
       <h1 class="game-title">破碎神殿的低語</h1>
     </div>
     <button class="submit-btn intro-btn" onclick="showIntroPage(2)">開始</button>
+    <p class="device-hint">建議使用電腦瀏覽器開啟,操作與畫面體驗較佳。</p>
   </div>
   <div class="intro-page" id="intro-page-2">
     <p>沒有人知道,那一夜究竟發生了什麼。</p>
@@ -1167,9 +1175,9 @@
   <button class="testimony-entry" onclick="openTestimonyBoard()">拾憶者的證詞板</button>
 
   <p class="hint-footer">六段散落的記憶,彼此牽引。<br>循著已甦醒的碎片,找出通往真相的道路。</p>
-
-  <div class="signature">By Elya Chao</div>
 </div>
+
+<div class="signature">By Elya Chao</div>
 
 <!-- Ending screen -->
 <div class="ending-overlay" id="ending-overlay">
