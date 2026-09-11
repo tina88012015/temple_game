@@ -574,47 +574,6 @@
     50%{transform:translateY(5px);}
   }
 
-  /* 最後推論(四選一) */
-  .inference-overlay{
-    position:fixed;
-    inset:0;
-    z-index:205;
-    display:none;
-    align-items:flex-start;
-    justify-content:center;
-    background:#000;
-    overflow-y:auto;
-    padding:12vh 6vw 10vh;
-  }
-  .inference-overlay.open{display:flex;}
-  .inference-box{max-width:620px; width:100%;}
-  .inference-heading{
-    text-align:center;
-    color:var(--gold-bright);
-    font-size:16px;
-    line-height:1.9;
-    margin:0 0 30px;
-    font-family:'Cinzel',serif;
-  }
-  .inference-options{display:flex; flex-direction:column; gap:14px;}
-  .inference-option{
-    text-align:left;
-    background:rgba(255,255,255,0.03);
-    border:1px solid var(--card-border);
-    border-radius:10px;
-    padding:16px 18px;
-    cursor:pointer;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
-  .inference-option:hover{border-color:var(--gold); background:rgba(203,161,77,0.08);}
-  .inference-option-title{color:var(--gold-bright); font-size:14.5px; font-weight:600; font-family:'Noto Serif TC',serif;}
-  .inference-option-desc{color:var(--parchment-dim); font-size:13px; line-height:1.9; font-family:'Noto Serif TC',serif;}
-  .inference-wrong{max-width:520px; margin:8vh auto 0; text-align:center;}
-  .inference-wrong p{font-size:14.5px; line-height:2.1; color:var(--parchment); margin:0 0 16px;}
-  .inference-wrong .submit-btn{margin-top:14px;}
-
   /* 真相頁 */
   .truth-overlay{
     position:fixed;
@@ -695,6 +654,13 @@
     cursor:pointer;
   }
   .truth-choice-btn:hover{background:rgba(203,161,77,0.18);}
+  .epilogue-end-mark{
+    text-align:center;
+    letter-spacing:0.35em;
+    color:var(--parchment-dim);
+    font-size:13px;
+    margin:14px 0 0 !important;
+  }
 
   /* Graham - scene hotspots */
   .scene-wrap{position:relative; margin-bottom:16px;}
@@ -1191,11 +1157,6 @@
   <button class="ending-return-btn" id="ending-return-btn" onclick="closeEnding()">返回主畫面</button>
 </div>
 
-<!-- Final inference (4-choice) -->
-<div class="inference-overlay" id="inference-overlay">
-  <div class="inference-box" id="inference-content"></div>
-</div>
-
 <!-- Truth page -->
 <div class="truth-overlay" id="truth-overlay">
   <div class="ending-text" id="truth-text"></div>
@@ -1206,6 +1167,7 @@
 <!-- Final ending (公開真相 / 封存記憶) -->
 <div class="truth-overlay" id="final-ending-overlay" style="z-index:215;">
   <div class="ending-text" id="final-ending-text"></div>
+  <button class="truth-next-arrow" id="final-ending-arrow" onclick="advanceToEpilogue()" aria-label="繼續">▾</button>
   <button class="ending-return-btn" id="final-ending-return-btn" onclick="restartWholeGame()">重新開始探索</button>
 </div>
 
@@ -1286,7 +1248,6 @@ function preloadGameImages(){
     'images/graham-shelf.png','images/graham-ledger-closed.png','images/graham-ledger-open.png',
     'images/scroll-closed.png','images/scroll-official-record.png','images/scroll-armory.png','images/scroll-medical.png','images/duty-report.png','images/damien-journal.png',
     'images/guard-alvin.png','images/guard-beck.png','images/guard-carl.png','images/guard-dain.png',
-    'images/aurien-frag-1-warning.png','images/aurien-frag-2-notice.png','images/aurien-frag-3-carriage.png','images/aurien-frag-4-order.png','images/aurien-frag-5-explosion.png',
     'images/mila-fragment-broken.png','images/mila-fragment-complete.png',
     'images/mystery-letter.png','images/mystery-letter-reply.png',
   ];
@@ -1339,8 +1300,6 @@ function openModal(key){
 
   // per-type post-render init + state reset
   if(c.type === 'memory-puzzle'){
-    currentOrder = [3,1,5,2,4];
-    renderFragments();
     resetSealState();
     initSealRings();
   } else if(c.type === 'scrolls'){
@@ -1421,33 +1380,12 @@ function revealMemory(id){
   }
 }
 
-/* ---------- 歐里安 · 計畫重建 ---------- */
-const fragments = [
-  { id:1, img:'images/aurien-frag-1-warning.png', text:'黑袍旅人深夜示警' },
-  { id:2, img:'images/aurien-frag-2-notice.png', text:'神殿整修公告,居民撤離' },
-  { id:3, img:'images/aurien-frag-3-carriage.png', text:'深夜馬車與黑布箱' },
-  { id:4, img:'images/aurien-frag-4-order.png', text:'密令達米安捏造戰報' },
-  { id:5, img:'images/aurien-frag-5-explosion.png', text:'封印室爆炸,歸於寂靜' },
-];
-let currentOrder = [3,1,5,2,4];
-let auDragIdx = null;
-
+/* ---------- 歐里安 · 封印之門 ---------- */
 function buildMemoryPuzzleHTML(c){
   return `
     ${modalHeader(c, '記憶修復')}
     <div class="modal-body">
-      <div id="aurien-intro" style="text-align:center;">
-        <img class="crystal-visual" src="images/mila-fragment-broken.png" alt="破碎的記憶水晶">
-        <p style="color:var(--gold-bright); font-size:13.5px; margin:10px 0 14px;">歐里安的記憶已破碎,請嘗試修復他的記憶。</p>
-        <button class="fragment-reveal-btn" onclick="revealAurienMemory()">點擊記憶碎片,嘗試修復</button>
-      </div>
-      <div id="aurien-puzzle" style="display:none;">
-        <p class="drag-hint">拖曳排出正確的順序。</p>
-        <ul class="fragment-list fragment-list-grid" id="fragment-list"></ul>
-        <button class="submit-btn" onclick="checkOrder()">修復記憶</button>
-        <p class="feedback-msg" id="feedback"></p>
-      </div>
-      <div id="aurien-seal" style="display:none;">
+      <div id="aurien-seal">
         <p class="seal-intro-text">歐里安最後的記憶被封存在一扇古老石門後。門中央有一個由 4 層圓環構成的神殿紋章,但三十年前神殿毀滅時,圓環全部錯位。</p>
         ${buildSealHTML()}
       </div>
@@ -1468,70 +1406,6 @@ function buildMemoryPuzzleHTML(c){
       </div>
     </div>
   `;
-}
-function revealAurienMemory(){
-  document.getElementById('aurien-intro').style.display = 'none';
-  document.getElementById('aurien-puzzle').style.display = 'block';
-  renderFragments();
-}
-function renderFragments(){
-  const list = document.getElementById('fragment-list');
-  if(!list) return;
-  list.innerHTML = currentOrder.map((fid, idx) => {
-    const frag = fragments.find(f => f.id === fid);
-    return `
-      <li class="fragment-item fragment-item-drag fragment-item-img" draggable="true" id="au-frag-${idx}"
-        ondragstart="auFragDragStart(event, ${idx})"
-        ondragover="auFragDragOver(event, ${idx})"
-        ondragleave="auFragDragLeave(event)"
-        ondrop="auFragDrop(event, ${idx})"
-        ondragend="auFragDragEnd(event)">
-        <span class="frag-order">${idx+1}</span>
-        <img class="frag-img" src="${frag.img}" alt="${frag.text}">
-      </li>
-    `;
-  }).join('');
-}
-function auFragDragStart(e, idx){
-  auDragIdx = idx;
-  e.dataTransfer.effectAllowed = 'move';
-  e.currentTarget.classList.add('dragging');
-}
-function auFragDragOver(e, idx){
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-  e.currentTarget.classList.add('drag-over');
-}
-function auFragDragLeave(e){
-  e.currentTarget.classList.remove('drag-over');
-}
-function auFragDrop(e, idx){
-  e.preventDefault();
-  e.currentTarget.classList.remove('drag-over');
-  if(auDragIdx === null || auDragIdx === idx) return;
-  const moved = currentOrder.splice(auDragIdx, 1)[0];
-  currentOrder.splice(idx, 0, moved);
-  auDragIdx = null;
-  renderFragments();
-  const fb = document.getElementById('feedback');
-  fb.textContent = '';
-  fb.className = 'feedback-msg';
-}
-function auFragDragEnd(e){
-  e.currentTarget.classList.remove('dragging');
-  auDragIdx = null;
-}
-function checkOrder(){
-  const correct = [1,2,3,4,5];
-  const isCorrect = currentOrder.every((id, i) => id === correct[i]);
-  if(isCorrect){
-    document.getElementById('aurien-puzzle').style.display = 'none';
-    document.getElementById('aurien-seal').style.display = 'block';
-  } else {
-    const feedback = document.getElementById('feedback');
-    feedback.textContent = '順序不對,因果對不上。';
-    feedback.className = 'feedback-msg wrong';
-  }
 }
 
 /* ---------- 歐里安 · 封印之門 ---------- */
@@ -2561,6 +2435,8 @@ let testimonyPlacement = {};
   } catch(e){ /* ignore corrupted storage */ }
 })();
 let testimonyDragId = null;
+let testimonyWrongAttempts = 0;
+let testimonyRevealColors = false;
 
 function saveTestimony(){
   localStorage.setItem('templeTestimony', JSON.stringify({ version: TESTIMONY_VERSION, placement: testimonyPlacement }));
@@ -2589,6 +2465,8 @@ function openTestimonyBoard(){
   }
 
   testimonyShuffledIds = shuffleArray(testimonyCards.map(c => c.id));
+  testimonyWrongAttempts = 0;
+  testimonyRevealColors = false;
   modal.innerHTML = buildTestimonyBoardHTML();
   modal.classList.add('modal-wide');
   overlay.classList.add('open');
@@ -2624,6 +2502,7 @@ function buildTestimonyBoardHTML(){
       <p class="testimony-pool-title">尚未分類的記憶</p>
       <div class="testimony-pool" id="zone-0" ondragover="testimonyDragOver(event)" ondragleave="testimonyDragLeave(event)" ondrop="testimonyDrop(event,0)"></div>
       <button class="submit-btn testimony-submit-btn" onclick="submitTestimony()">拼湊真相</button>
+      <p class="feedback-msg" id="testimony-feedback"></p>
     </div>
   `;
 }
@@ -2652,7 +2531,7 @@ function renderTestimonyBoard(){
     if(!zone) return;
     const title = zone.querySelector('.testimony-zone-title').outerHTML;
     const cards = unlocked.filter(c => testimonyPlacement[c.id] === q);
-    zone.innerHTML = title + cards.map(c => testimonyCardHTML(c, c.q === q ? 'correct' : 'incorrect')).join('');
+    zone.innerHTML = title + cards.map(c => testimonyCardHTML(c, testimonyRevealColors ? (c.q === q ? 'correct' : 'incorrect') : '')).join('');
   });
 
   const pool = document.getElementById('zone-0');
@@ -2729,8 +2608,30 @@ const endings = {
   ],
 };
 function submitTestimony(){
-  closeModal();
-  openInference();
+  const fb = document.getElementById('testimony-feedback');
+  const total = testimonyCards.length;
+  const score = testimonyScore();
+  if(score === total){
+    testimonyRevealColors = true;
+    renderTestimonyBoard();
+    if(fb){ fb.textContent = '【證詞重構完成】'; fb.className = 'feedback-msg correct'; }
+    setTimeout(() => {
+      closeModal();
+      showTruthPage();
+    }, 1500);
+  } else {
+    testimonyWrongAttempts++;
+    if(testimonyWrongAttempts >= 2){
+      testimonyRevealColors = true;
+    }
+    renderTestimonyBoard();
+    if(fb){
+      fb.textContent = testimonyRevealColors
+        ? '還有幾則證詞放錯了問題,紅框請再調整。'
+        : '證詞之間還兜不起來,再想想看。';
+      fb.className = 'feedback-msg wrong';
+    }
+  }
 }
 function showEnding(key){
   const lines = endings[key];
@@ -2762,61 +2663,6 @@ function closeEnding(){
   document.body.style.overflow = '';
 }
 
-/* ---------- 最後推論(四選一) ---------- */
-const inferenceOptions = [
-  { key:'A', title:'東門失守', desc:'敵軍趁夜攻入東門,守衛抵抗至天明。歐里安與神殿最終在戰火中消失。', correct:false },
-  { key:'B', title:'封印失控', desc:'神殿深處的封印突然失控。歐里安來不及撤離,只能留下阻止異變,最終與神殿一同毀滅。', correct:false },
-  { key:'C', title:'遭人追捕', desc:'神殿的秘密遭到外人發現。歐里安帶領眾人連夜逃離,神殿則在無人看守後遭到摧毀。', correct:false },
-  { key:'D', title:'被安排好的「戰敗」', desc:'神殿的毀滅並非意外。人們早已被安排離開,而歐里安選擇留下,讓一場從未發生的戰爭成為最後被記住的故事。', correct:true },
-];
-function openInference(){
-  const overlay = document.getElementById('inference-overlay');
-  overlay.classList.add('open');
-  document.body.style.overflow = 'hidden';
-  renderInferenceQuestion();
-}
-function closeInferenceOverlay(){
-  document.getElementById('inference-overlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-function renderInferenceQuestion(){
-  const box = document.getElementById('inference-content');
-  box.innerHTML = `
-    <p class="inference-heading">三十年前,憶之神殿究竟發生了什麼?</p>
-    <div class="inference-options">
-      ${inferenceOptions.map(o => `
-        <button class="inference-option" onclick="pickInference('${o.key}')">
-          <span class="inference-option-title">${o.key}｜${o.title}</span>
-          <span class="inference-option-desc">${o.desc}</span>
-        </button>
-      `).join('')}
-    </div>
-  `;
-}
-function pickInference(key){
-  const opt = inferenceOptions.find(o => o.key === key);
-  if(opt && opt.correct){
-    closeInferenceOverlay();
-    showTruthPage();
-  } else {
-    renderInferenceWrong();
-  }
-}
-function renderInferenceWrong(){
-  const box = document.getElementById('inference-content');
-  box.innerHTML = `
-    <div class="inference-wrong">
-      <p>真相似乎還缺了一角。</p>
-      <p>你已經找回了所有記憶,但有些證詞,仍然無法被這個答案解釋。</p>
-      <p>也許真正發生的事,就藏在那些彼此矛盾的記憶之中。</p>
-      <button class="submit-btn" onclick="backToHubFromInference()">重新推論</button>
-    </div>
-  `;
-}
-function backToHubFromInference(){
-  closeInferenceOverlay();
-}
-
 /* ---------- 真相頁 ---------- */
 const truthLines = [
   '東門從未發生過戰鬥。',
@@ -2834,11 +2680,10 @@ const truthLines = [
 ];
 const truthCrystalLines = [
   '記憶水晶仍在發光。',
-  '真相已經完整。',
-  '公開它,歐里安真正的選擇將被世人知曉。',
-  '封存它,他想守住的秘密也將繼續沉睡。',
-  '三十年前,他做出了自己的選擇。',
-  '現在,輪到你了。',
+  '三十年前,歐里安讓真相沉睡。',
+  '三十年後,你喚醒了它。',
+  '但被遺忘,是否也是他計畫的一部分?',
+  '這一次,由你決定。',
 ];
 function showTruthPage(){
   const overlay = document.getElementById('truth-overlay');
@@ -2920,40 +2765,25 @@ function showTruthCrystalStage(){
 }
 function chooseRevealTruth(){
   showFinalEnding('truth-ending-day.png', '《被記住的真相》', [
-    '三十年前的官方戰報被重新改寫。',
-    '「東門之戰」不再被記載為一場守衛失敗的戰役。',
-    '世人終於知道,',
-    '神殿毀滅以前,曾有人讓居民與祭司平安離開;',
-    '也曾有人選擇獨自留下,承擔最後的一切。',
-    '歐里安的名字,再一次被寫進歷史。',
-    '這一次,不是作為一個失敗者。',
-    '然而,隨著舊案重新被翻開,',
-    '那輛沒有徽記的馬車,也再次出現在人們的視線裡。',
-    '沒有人知道三十年前的「她」如今身在何處。',
-    '也沒有人知道,',
-    '這段遲來的真相,是否會再次找到她。',
-    '你讓世人記住了一個被遺忘的人。',
-    '也讓一段本應消失的記憶,重新回到了世界。',
+    '記憶水晶的光芒沒有熄滅。',
+    '三十年前被掩埋的記憶,重新回到世人眼前。',
+    '人們終於知道——',
+    '歐里安從未輸掉那場戰爭。',
+    '因為那場戰爭,從未發生。',
+    '那些曾被遺忘的名字與選擇,',
+    '也終於有了被重新理解的機會。',
+    '從此,那一夜有了另一種被記住的方式。',
   ]);
 }
 function chooseSealMemory(){
   showFinalEnding('truth-ending-night.png', '《無人知曉的守護》', [
-    '記憶水晶的光芒漸漸暗去。',
-    '你最終沒有將那段記憶帶回王都。',
-    '三十年前的歷史依舊寫著:',
-    '「三更,敵軍自東門突襲。」',
-    '沒有人會重新尋找那輛馬車。',
-    '沒有人會追問那個被藏起來的「她」。',
-    '歐里安想守住的秘密,',
-    '在三十年後,依然沒有被打開。',
-    '只是從今以後,',
-    '世人仍會記得那個錯誤的故事。',
-    '沒有人知道他為什麼留下。',
-    '沒有人知道他真正守住了什麼。',
-    '甚至沒有人知道,',
-    '那一夜其實從未有過一場戰爭。',
-    '你替他守住了最後的秘密。',
-    '也讓他的真相,永遠留在了神殿之中。',
+    '記憶水晶的光芒漸漸熄滅。',
+    '你沒有帶走任何證明。',
+    '三十年前的戰報仍留在歷史之中。',
+    '歐里安依然是那個「沒能守住神殿的人」。',
+    '沒有人知道他最後做了什麼。',
+    '神殿再次歸於沉默。',
+    '但至少這一次,有一個人記得真正發生過的事。',
   ]);
 }
 function showFinalEnding(bg, title, lines){
@@ -2962,11 +2792,16 @@ function showFinalEnding(bg, title, lines){
   const flash = document.getElementById('truth-flash');
   const textBox = document.getElementById('final-ending-text');
   const returnBtn = document.getElementById('final-ending-return-btn');
+  const arrow = document.getElementById('final-ending-arrow');
 
+  textBox.style.transition = '';
+  textBox.style.opacity = '1';
   textBox.innerHTML = `<p class="final-ending-title">${title}</p>` +
     lines.map((l, i) => `<p class="ending-line" id="final-ending-line-${i}">${l}</p>`).join('');
   returnBtn.classList.remove('show');
   returnBtn.style.display = 'none';
+  arrow.classList.remove('show');
+  arrow.style.display = 'none';
   document.body.style.overflow = 'hidden';
 
   const crystalWrap = document.querySelector('.truth-crystal-layout .reveal-crystal-wrap');
@@ -2990,14 +2825,55 @@ function showFinalEnding(bg, title, lines){
           }
           if(i === lines.length - 1){
             setTimeout(() => {
-              returnBtn.style.display = 'inline-block';
-              requestAnimationFrame(() => returnBtn.classList.add('show'));
+              arrow.style.display = 'flex';
+              requestAnimationFrame(() => arrow.classList.add('show'));
             }, 1800);
           }
         }, i * 1900);
       });
     }, 500);
   }, 550);
+}
+const epilogueLines = [
+  '記憶從來不只是過去。',
+  '選擇記住什麼,也決定了我們如何理解現在。',
+];
+function advanceToEpilogue(){
+  const arrow = document.getElementById('final-ending-arrow');
+  const textBox = document.getElementById('final-ending-text');
+  const returnBtn = document.getElementById('final-ending-return-btn');
+
+  arrow.classList.remove('show');
+  arrow.style.display = 'none';
+  textBox.style.transition = 'opacity 1.2s ease';
+  textBox.style.opacity = '0';
+
+  setTimeout(() => {
+    textBox.style.transition = '';
+    textBox.style.opacity = '1';
+    textBox.innerHTML =
+      epilogueLines.map((l, i) => `<p class="ending-line" id="epilogue-line-${i}">${l}</p>`).join('') +
+      `<p class="final-ending-title ending-line" id="epilogue-title" style="margin-top:34px;">《破碎神殿的低語》</p>` +
+      `<p class="epilogue-end-mark ending-line" id="epilogue-end">— END —</p>`;
+
+    epilogueLines.forEach((l, i) => {
+      setTimeout(() => {
+        const el = document.getElementById(`epilogue-line-${i}`);
+        if(el) el.classList.add('show');
+      }, i * 1900);
+    });
+    const afterLines = epilogueLines.length * 1900;
+    setTimeout(() => {
+      const t = document.getElementById('epilogue-title');
+      if(t) t.classList.add('show');
+    }, afterLines + 400);
+    setTimeout(() => {
+      const e = document.getElementById('epilogue-end');
+      if(e) e.classList.add('show');
+      returnBtn.style.display = 'inline-block';
+      requestAnimationFrame(() => returnBtn.classList.add('show'));
+    }, afterLines + 1600);
+  }, 1200);
 }
 function closeFinalEnding(){
   document.getElementById('final-ending-overlay').classList.remove('open');
